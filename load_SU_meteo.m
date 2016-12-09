@@ -84,15 +84,13 @@ try
     time = datenum(double([cell2mat(temp(1)),cell2mat(temp(2)),cell2mat(temp(3)),...
                    cell2mat(temp(4)),cell2mat(temp(5)),cell2mat(temp(6))]));
     for i = 1:length(time)
-      time(i,2:(length(temp)-6)) = time(i,1) + [1:1:(length(temp)-7)].*sample/86400;
+        time(i,2:length(temp)-6) = time(i,1) + [1:1:(length(temp)-7)].*sample/86400;
     end
     % Convert matrix to vector
     temp_time = time';
     time = temp_time(:);
-    data = [];
-    for i = 7:length(temp)
-      data = vertcat(data,cell2mat(temp(i)));
-    end
+    temp_data = transpose(cell2mat(temp(7:end)));
+    data = temp_data(:);
   else
       disp(['No such file: ',file_in,' found']);
   end

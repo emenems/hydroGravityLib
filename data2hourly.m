@@ -7,7 +7,7 @@ function [time_out,data_out,check_out] = data2hourly(time,data,convertSwitch,nan
 % Input:
 %   time        ... time matrix [year,month,day,hour,minute,second]
 %   data        ... data matrix or vector.
-%   convertSwitch ... 1 = daily means (e.g., for temperature)
+%   convertSwitch ... 1 = hourly means (e.g., for temperature)
 %                   2 = hourly sums (e.g., for precipitation)
 %   nanSwitch   ... 0 = NaN on input => NaN on output
 %                   1 = NaN on input will be removed => no NaN on output
@@ -57,33 +57,54 @@ if (nanSwitch == 1)
 end
 % First create unique time ID for each hour = yyyymmddhh
 timeID = year*1000000+month*10000+day*100+hour;
-timeID = unique(timeID);    % remove redundand values
-% converts yyyymmddhh -> [yyyy,mm,dd,hh]
-time_out(:,1) = floor(timeID/1000000);
-time_out(:,2) = floor((timeID - time_out(:,1)*1000000)/10000);
-time_out(:,3) = floor((timeID - time_out(:,1)*1000000 - time_out(:,2)*10000)/100);
-time_out(:,4) = timeID-time_out(:,1)*1000000 - time_out(:,2)*10000 - time_out(:,3)*100;
-time_out(:,5:6) = 0;
-            
+[timeID,ind] = unique(timeID);    % remove redundant values
+% Create output time matrix
+time_out = [year(ind),month(ind),day(ind),hour(ind),hour(ind).*0,hour(ind).*0];
+clear ind      
 % Declare output variables
 data_out(1:length(timeID),1:size(data,2)) = NaN;
 check_out(1:length(timeID),2) =1/time_resol/24;  % compute 'should' value
 
 %% Run loop for all unique time IDs
+% Aux variable showing yyyymmddhh for all input values. This parameter will
+% be used to identify all value within j-th hour
 time_pattern = year*1000000+month*10000+day*100+hour;
-for i = 1:length(timeID)
-    % Find all values for current year and month 
-    r = find(time_pattern == timeID(i));
-    if ~isempty(r)                      % if no data found => output = NaN;
-        % Check number of elements used for mean/sum computation and
-        % computed the 'should' value.
-        check_out(i,1) = length(r);     % = number of elements used for the computation
-        switch convertSwitch
-            case 1 % => compute daily means
-                data_out(i,:) = mean(data(r,:),1);
-            case 2 % => aggregate data
-                data_out(i,:) = sum(data(r,:),1);
+% Set aux parameters to count unique hours and total number of values
+% within this hour (c)
+j = 1;
+c = 1;
+% Starting value
+total = data(1);
+% Loop for all input values
+for i = 2:length(data)
+    if timeID(j) ~= time_pattern(i)
+        if convertSwitch == 1 % Mean
+            data_out(j,1) = total/c;
+            check_out(j,1) = c;
+        elseif convertSwitch == 2  % Total sum
+            data_out(j,1) = total;
+            check_out(j,1) = c;
         end
+        % Move to next hour
+        j = j + 1;
+        % Reset counts
+        c = 1;
+        total = data(i);
+    else
+        % Otherwise, keep counting
+        total = total + data(i);
+        c = c + 1;
+    end
+end
+% Check the last hour (will not be filled by the code above due to the if
+% condition in the beginning)
+r = find(time_pattern == timeID(end));
+if ~isempty(r) 
+    check_out(end,1) = length(r); 
+    if convertSwitch == 1
+        data_out(end,:) = mean(data(r,:),1);
+    elseif convertSwitch == 2 
+        data_out(end,:) = sum(data(r,:),1);
     end
 end
 

@@ -59,43 +59,65 @@ if (nanSwitch == 1)
 end
 % First create unique time ID for each day  = yyyymmdd
 timeID = year*10000+month*100+day;
-timeID = unique(timeID);    % remove redundand values
+[timeID,ind] = unique(timeID);    % remove redundant values
 % converts yyyymmdd -> [yyyy,mm,dd]
-time_out(:,1) = floor(timeID/10000);
-time_out(:,2) = floor((timeID-time_out(:,1)*10000)/100);
-time_out(:,3) = timeID-time_out(:,1)*10000 - time_out(:,2)*100;
-            
+% Create output time matrix
+time_out = [year(ind),month(ind),day(ind)];
+clear ind
 % Declare output variables
 data_out(1:length(timeID),1:size(data,2)) = NaN;
-check_out(1:length(timeID),1:size(data,2)) = NaN;
+check_out(1:length(timeID),2) =1/time_resol/24;  % compute 'should' value
 
 %% Run loop for all unique time IDs
+% Aux variable showing yyyymmdd for all input values. This parameter will
+% be used to identify all value within j-th day
 time_pattern = year*10000+month*100+day;
-for i = 1:length(timeID)
-    % Find all values for current year and month 
-    r = find(time_pattern == timeID(i));
-    if ~isempty(r)                      % if no data found => output = NaN;
-        % Check number of elements used for mean/sum computation and
-        % computed the 'should' value.
-        check_out(i,1) = length(r);     % = number of elements used for the computation
-        check_out(i,2) = 1/time_resol;  % compute 'should' value
-        % get found values
-        temp = data(r,:);
-        % Remove or keep NaNs depending on switch
-        if nanSwitch == 2
-            temp(isnan(sum(temp,2)),:) = [];
+% Set aux parameters to count unique days and total number of values
+% within this day (c)
+j = 1;
+c = 1;
+% Starting value
+total = data(1);
+% Loop for all input values
+for i = 2:length(data)
+    if timeID(j) ~= time_pattern(i)
+        if convertSwitch == 1 % Mean
+            data_out(j,1) = total/c;
+            check_out(j,1) = c;
+        elseif convertSwitch == 2  % Total sum
+            data_out(j,1) = total;
+            check_out(j,1) = c;
         end
-        switch convertSwitch
-            case 1 % => compute daily means
-                data_out(i,:) = mean(temp,1);
-            case 2 % => aggregate data
-                data_out(i,:) = sum(temp,1);
-        end
-        clear temp
+        % Move to next hour
+        j = j + 1;
+        % Reset counts
+        c = 1;
+        total = data(i);
+    else
+        % Otherwise, keep counting
+        total = total + data(i);
+        c = c + 1;
     end
 end
-
-
+% Check the last day (will not be filled by the code above due to the if
+% condition in the beginning)
+r = find(time_pattern == timeID(end));
+if ~isempty(r)                      
+    check_out(end,1) = length(r);
+    check_out(end,2) = 1/time_resol;
+    % get found values
+    temp = data(r,:);
+    % Remove or keep NaNs depending on switch
+    if nanSwitch == 2
+        temp(isnan(sum(temp,2)),:) = [];
+    end
+    switch convertSwitch
+        case 1 % => compute daily means
+            data_out(end,:) = mean(temp,1);
+        case 2 % => aggregate data
+            data_out(end,:) = sum(temp,1);
+    end
+end
 
 end
 
