@@ -77,25 +77,25 @@ time_pattern = year*10000+month*100+day;
 j = 1;
 c = 1;
 % Starting value
-total = data(1);
+total = data(1,:);
 % Loop for all input values
 for i = 2:length(data)
     if timeID(j) ~= time_pattern(i)
         if convertSwitch == 1 % Mean
-            data_out(j,1) = total/c;
+            data_out(j,:) = total./c;
             check_out(j,1) = c;
         elseif convertSwitch == 2  % Total sum
-            data_out(j,1) = total;
+            data_out(j,:) = total;
             check_out(j,1) = c;
         end
         % Move to next hour
         j = j + 1;
         % Reset counts
         c = 1;
-        total = data(i);
+        total = data(i,:);
     else
         % Otherwise, keep counting
-        total = total + data(i);
+        total = total + data(i,:);
         c = c + 1;
     end
 end
