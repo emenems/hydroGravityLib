@@ -19,6 +19,7 @@ function [timeout,dataout] = mm_filt(timein,datain,impulsein,orig_step)
 % Requirement (additional functions):
 %   findTimeStep.m
 %   mmconv.m
+%   time2pattern.m
 % 
 % Example:
 %   [timeout,dataout] = mm_filt(timein,datain,impulsein,orig_step)
@@ -32,13 +33,13 @@ for c = 1:size(datain,2)
 	% Run a loop for all time intervals without NaNs or missing data separately
 	% (filter between time steps that have been found using findTimeStep function) 
 	for i = 1:size(id,1)                                                         
-		if length(dataout0(id(i,1):id(i,2))) > length(impulsein)*2  % filter only if the current time interval is long enough
+		if (id(i,2)-id(i,1)) > length(impulsein)*2  % filter only if the current time interval is long enough
 			[ftime,fgrav] = mmconv(timeout0(id(i,1):id(i,2)),dataout0(id(i,1):id(i,2)),impulsein,'valid'); % use mmconv = Convolution function (outputs only valid time interval, see nnconv function for details)
-		else
+        else
 			ftime = timeout0(id(i,1):id(i,2)); % if the interval is too short, set to NaN 
 			fgrav(1:length(ftime),1) = NaN;
 		end
-		dout = vertcat(dout,fgrav,NaN); % stack the aux. data vertically + NaN to mark holes between fillering sequences
+		dout = vertcat(dout,fgrav,NaN); % stack the aux. data vertically + NaN to mark holes between filtering sequences
 		tout = vertcat(tout,ftime,...   % stack the aux. time vertically. Do NOT add NaNs!
 				ftime(end)+orig_step); % this last part is for a NaN that has been apended to 'dout' (see above)  
 		clear ftime fgrav
