@@ -39,9 +39,15 @@ timeout = transpose(time(1):orig_step:time(end));
 % Check the time resolution precision (either in
 % seconds or milliseconds. If latter, use 0.01 sec precision)
 if round(orig_step*86400) ~= orig_step*86400
-    convert_switch = 'msecond';
+    convert_switch = 'msecond';    
 else
     convert_switch = 'second';
+    % Round to seconds also the output vector (the creation in 38th row is
+    % limited to double precision)
+    timeout_mat = datevec(timeout); 
+    timeout_mat(:,end) = round(timeout_mat(:,end));
+    timeout = datenum(timeout_mat); 
+    clear timeout_mat;
 end
 timepattern = time2pattern(timeout,convert_switch);
 timeID = time2pattern(time,convert_switch);
@@ -72,5 +78,5 @@ else
 end
 
 
-end % end of fuction
+end % end of function
 
