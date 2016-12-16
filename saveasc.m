@@ -30,14 +30,14 @@ check_size = abs(grid_y(1,1)-grid_y(2,1));
 xll = min(min(grid_x))-cellsize/2;
 yll = min(min(grid_y))-cellsize/2;
 
-if round(cellsize,7) == round(check_size,7)
+if round(cellsize*1e+7)/1e+7 == round(check_size*1e+7)/1e+7
     fid = fopen(file_out,'w');
-    fprintf(fid,'NCOLS %9.0f\nNROWS %9.0f\n',ncols,nrows);
-    fprintf(fid,'XLLCORNER %19.10f\nYLLCORNER %19.10f\n',xll,yll);
-    fprintf(fid,'CELLSIZE %19.10f\n',cellsize);
-    fprintf(fid,'NODATA_VALUE %19.10f\n',out_no_data);
+    fprintf(fid,'NCOLS %g\nNROWS %g\n',ncols,nrows);
+    fprintf(fid,'XLLCORNER %g\nYLLCORNER %g\n',xll,yll);
+    fprintf(fid,'CELLSIZE %g\n',cellsize);
+    fprintf(fid,'NODATA_VALUE %g\n',out_no_data);
     fclose(fid);
-    dlmwrite(file_out,flipud(grid_h),'precision','%.3f','delimiter',' ','-append');
+    dlmwrite(file_out,flipud(grid_h),'precision','%g','delimiter',' ','-append');
 end
 
 end

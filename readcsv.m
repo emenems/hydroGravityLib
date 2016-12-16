@@ -65,7 +65,7 @@ if head > 0
     end
 end
 % Create format for reading
-format_spec = [];
+format_spec = '';
 % Check if user set 'string columns' == varargin{2}
 if nargin == 8
     string_columns = varargin{2};

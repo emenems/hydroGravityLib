@@ -12,7 +12,8 @@ function [r_stand,r_boots,ptest,ttest] = mmcorr(signal1,signal2,varargin)
 % Output:
 %   r_stand     ...     Person's correlation coefficient (scalar)
 %   r_boots     ...     Person's correlation coefficient computed using
-%                       bootstrap sampling (1000 data sets)
+%                       bootstrap sampling (1000 data sets). Does NOT work with 
+%                       OCTAVE!!
 %   ptest       ...     p value (value close to 0 => significant r_stand,
 %                                value close to 1 => not significant)
 %   ttest       ...     t-test statistic (vector). Null hypothesis: there
@@ -36,7 +37,15 @@ signal2(r) = [];
 clear r;
 
 %% Standard method
-[r_stand,ptest] = corrcoef(signal1,signal2);
+% Switch between matlab and octave
+v = version;
+if strcmp(v(end),')') % matlab
+    [r_stand,ptest] = corrcoef(signal1,signal2);
+else % octave
+    r_stand(1,2) = corr(signal1,signal2);
+    temp = cor_test(signal1,signal2);
+    ptest(1,2) = temp.pval;
+end
 if ~isempty(r_stand) % empty if input length == 0 (e.g., all removed with singal(r) = [];
     r_stand = r_stand(1,2);
     ptest = ptest(1,2);
@@ -44,13 +53,12 @@ else
     r_stand = NaN;
     ptest = ptest(1,2);
 end
-
 %% T test
 ttest(1) = r_stand*((length(signal1)-2)/(1-r_stand^2))^0.5;
 ttest(2) = tinv(0.95,length(signal1)-2);
 
 %% Bootstrap
-if nargin == 3
+if nargin == 3 && strcmp(v(end),')')
     r_boots = bootstrp(varargin{1},@corrcoef,signal1,signal2);
     r_boots = r_boots(:,2);
 else

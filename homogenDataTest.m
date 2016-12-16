@@ -57,7 +57,7 @@ a = y_mean - b*x_mean;
 y_surr = a + b*data_full;
 %y_surr = polyval(p,data_full);
 resid = data_miss - y_surr;
-resid_sd = std(resid);
+resid_sd = y_std*sqrt(1-corxy(1,2)^2);
 resid_cum = cumsum(resid);
 
 figure('Position',[200,400,1000,400],'PaperPositionMode','auto','name','Regression analysis');

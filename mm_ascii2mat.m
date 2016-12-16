@@ -25,41 +25,33 @@ row = fgetl(fid);
 head = 0;
 % Read until numeric values
 while isnan(str2double(row(1)))
-    % Split input/current row
-    temp = strsplit(row,' ');
-    % Get/read the input parameters. Use case sensitive switch
-    switch row(1:3)
-        case 'NCO'
-            ncols = str2double(temp(end));
-        case 'nco'
-            ncols = str2double(temp(end));
-        case 'NRO'
-            nrows = str2double(temp(end));
-        case 'nro'
-            nrows = str2double(temp(end));
-        case 'XLL'
-            xll = str2double(temp(end));
-        case 'xll'
-            xll = str2double(temp(end));
-        case 'YLL'
-            yll = str2double(temp(end));
-        case 'yll'
-            yll = str2double(temp(end));
-        case 'CEL'
-            resol = str2double(temp(end));
-        case 'cel'
-            resol = str2double(temp(end));
-        case 'NOD'
-            nodata = str2double(temp(end));
-        case 'nod'
-            nodata = str2double(temp(end));
-    end
-    % Read next row
-    row = fgetl(fid);
-    head = head + 1;
-    % Check for empty/unsupported rows
-    if length(row) < 3
-        row = 'keep looking';
+    if strcmp(row(1),'-')
+        break;
+    else
+        % Split input/current row
+        temp = strsplit(row,' ');
+        % Get/read the input parameters. Use case sensitive switch
+        switch lower(row(1:3))
+            case 'nco'
+                ncols = str2double(temp(end));
+            case 'nro'
+                nrows = str2double(temp(end));
+            case 'xll'
+                xll = str2double(temp(end));
+            case 'yll'
+                yll = str2double(temp(end));
+            case 'cel'
+                resol = str2double(temp(end));
+            case 'nod'
+                nodata = str2double(temp(end));
+        end
+        % Read next row
+        row = fgetl(fid);
+        head = head + 1;
+        % Check for empty/unsupported rows
+        if length(row) < 3
+            row = 'keep looking';
+        end
     end
 end
 % Close the file. The same file will be loaded using dlmread function (much
@@ -72,8 +64,8 @@ data = dlmread(fileID,' ',head,0);
 % respect to x,y (meshgrid)
 dem.height = flipud(data);
 % Compute x, y grid
-[dem.x,dem.y] = meshgrid(xll:resol:xll+resol*(ncols-1),...
-                         yll:resol:yll+resol*(nrows-1));
+[dem.x,dem.y] = meshgrid(xll+resol/2:resol:xll+resol/2+resol*(ncols-1),...
+                         yll+resol/2:resol:yll+resol/2+resol*(nrows-1));
 % Set NoData values to NaN
 if exist('nodata','var')
     dem.height(dem.height==nodata) = NaN;
