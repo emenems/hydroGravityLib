@@ -115,12 +115,16 @@ end
 if sum(dout(:,1)) ~= 0
     disp('loadtsf: incorrect output value');
 end
+if ~isnan(dout(1,2)) ~= 0
+    disp('loadtsf: incorrect output value');
+end
 if ~strcmp(strrep(units{1},' ',''),'units1')
     disp('loadtsf: units not read correctly');
 end
 if ~strcmp(strrep(channel_names{2},' ',''),'Measurement2')
     disp('loadtsf: channel names not read correctly');
 end
+clear tout dout units channel_names
 
 %% LonLat2psi
 psi = LonLat2psi(0,0,0,0);
@@ -138,7 +142,7 @@ dem = mm_ascii2mat(fullfile('input','mm_ascrii2mat_data.asc'));
 if length(find(isnan(dem.height))) ~= 4
     disp('mm_ascii2mat: incorrect output value');
 end
-if ((dem.x(1,1) - dem.x(1,2)) ~= -50) | (dem.y(1,1) - dem.y(2,1)) ~= -50
+if ((dem.x(1,1) - dem.x(1,2)) ~= -50) || (dem.y(1,1) - dem.y(2,1)) ~= -50
     disp('mm_ascii2mat: incorrect output value');
 end
 clear dem
@@ -172,7 +176,7 @@ clear time_out data_out
 
 %% mm_statnan
 [out_std,out_mean,out_min,out_max,out_range] = mm_statnan(data);
-if out_std~=0 || out_mean~= 1 || out_min~= 1 || out_min~= 1 || out_range ~= 0
+if out_std~=0 || out_mean~= 1 || out_min~= 1 || out_max~= 1 || out_range ~= 0
     disp('mm_statnan: incorrect output value');
 end
 clear out_std out_mean out_min out_max out_range
@@ -198,7 +202,7 @@ clear r_stand ptest
 if length(time_out) ~= 5
     disp('readcsv: wrong output length');
 end
-if time_out(1) ~= datenum(2008,7,15) | data_out(1,1) ~= 0
+if time_out(1) ~= datenum(2008,7,15) || data_out(1,1) ~= 0
     disp('readcsv: incorrect output value');
 end
 clear time_out data_out header
