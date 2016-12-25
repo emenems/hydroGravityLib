@@ -2,7 +2,7 @@ function [timeout,dataout,id_out,id_in] = findTimeStep(time,data,orig_step)
 %FINDTIMESTEP Function for identifying steps and filling them with NaN
 % Input:
 %   time        ...     input time vector
-%   data        ...     input data vector
+%   data        ...     input data vector or matrix
 %   orig_step   ...     sampling rate in days (datenum), e.g. 1/24 for 1
 %                       hour sampling
 % 
@@ -72,9 +72,9 @@ for i = 1:length(timepattern)
     end
 end
 if length(id_in)>1
-    id_in(:,2) = vertcat(id_in(2:end,1)-1,length(data));
+    id_in(:,2) = vertcat(id_in(2:end,1)-1,size(data,1));
 else
-    id_in(1,2) = length(data);
+    id_in(1,2) = size(data,1);
 end
 
 

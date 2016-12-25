@@ -1,1 +1,2 @@
 test/output/*.*
+!test/output/output_folder_content.txt

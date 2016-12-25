@@ -209,6 +209,7 @@ clear time_out data_out header
 
 %% WRITE OUTPUT
 if check_write == 1
+    % Check if output folder exist
     %% saveasc
     [grid_x,grid_y] = meshgrid(-1:1:1,2:1:4);
     saveasc(fullfile('output','saveasc_test.asc'),grid_x,grid_y,grid_x.*0,9999);

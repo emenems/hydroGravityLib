@@ -1,0 +1,6 @@
+This folder must contain after unit test run following files:
+saveasc_test.asc
+write4dygraph_test.csv
+writetsf_test.tsf file
+showPrism_test.jpg file
+homogenDataTest_test*.jpg
