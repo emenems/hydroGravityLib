@@ -196,6 +196,21 @@ if round(r_stand*10000)/10000 ~= 0.2 || round(ptest*10000)/10000 ~= 0.8
 end
 clear r_stand ptest
 
+%% sorokin
+dg = sorokin([0,0,1],0,0,0,1000,1,[100000 100000]);
+dg_compare = 2*pi*6.674e-11*1000*1*10^8;
+if round(dg*100)/100 ~= round(dg_compare*100)/100
+    disp('sorokin: incorrect output value');
+end
+clear dg
+
+%% cylinderEffect
+dg = cylinderEffect(1,100000,1,1000);
+if round(dg*100)/100 ~= round(dg_compare*100)/100
+    disp('cylinderEffect: incorrect output value');
+end
+clear dg
+
 %% readcsv
 [time_out,data_out,header] = readcsv(fullfile('input','readcsv_data.dat'),4,...
 ',',1,'"yyyy-mm-dd HH:MM:SS"','All',{'"NAN"'});
