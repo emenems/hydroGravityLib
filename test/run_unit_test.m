@@ -213,7 +213,7 @@ clear dg
 
 %% readcsv
 [time_out,data_out,header] = readcsv(fullfile('input','readcsv_data.dat'),4,...
-',',1,'"yyyy-mm-dd HH:MM:SS"','All',{'"NAN"'});
+    ',',1,'"yyyy-mm-dd HH:MM:SS"','All',{'"NAN"'});
 if length(time_out) ~= 5
     disp('readcsv: wrong output length');
 end

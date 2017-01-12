@@ -9,7 +9,9 @@ function [time,data,header] = readcsv(input_file,head,delim,date_column,date_for
 %   date_format ...     date string
 %                       Example: '"yyyy-dd-mm HH:MM:SS"'
 %                                'yyyy/mm/dd HH:MM:SS'
-%   data_column ...     data column
+%                       String must contain yyyy, dd and mm. HH,MM and SS
+%                       are optional
+%   data_column ...     data column (count includes date)
 %                       Example: 5 = load fifth column (in csv)
 %                                2:10 = load all columns between 2 and 10
 %                                (including 2 and 10)
@@ -64,7 +66,48 @@ if head > 0
        fgetl(fid); 
     end
 end
-% Create format for reading
+% Create date/time format for reading
+i = 1;j = 1;
+r_yy = 0;r_mm = 0;r_dd = 0;r_hh = 0;r_mi = 0;r_se = 0;
+format_spec_data = '';
+while i <= length(date_format)
+    switch date_format(i)
+        case 'y'
+            if isempty(strfind(date_format,'yyyy'))
+                format_spec_data = [format_spec_data,'%2f'];
+                i = i + 2;
+            else
+                format_spec_data = [format_spec_data,'%4f'];
+                i = i + 4;
+            end
+            r_yy = j;
+            j = j + 1;
+        case 'm'
+            format_spec_data = [format_spec_data,'%2f'];
+            r_mm = j;
+            i = i + 2;j = j + 1;
+        case 'd'
+            format_spec_data = [format_spec_data,'%2f'];
+            r_dd = j;
+            i = i + 2;j = j + 1;
+        case 'H'
+            format_spec_data = [format_spec_data,'%2f'];
+            r_hh = j;
+            i = i + 2;j = j + 1;
+        case 'M'
+            format_spec_data = [format_spec_data,'%2f'];
+            r_mi = j;
+            i = i + 2;j = j + 1;
+        case 'S'
+            format_spec_data = [format_spec_data,'%2f'];
+            r_se = j;
+            i = i + 2;j = j + 1;
+        otherwise
+            format_spec_data = [format_spec_data,date_format(i)];
+            i = i + 1;
+    end
+end
+clear i
 format_spec = '';
 % Check if user set 'string columns' == varargin{2}
 if nargin == 8
@@ -74,7 +117,7 @@ else
 end
 for i = 1:number_of_column
     if i == date_column % read data as string. The datenum function and 'date_format' will be used to transorm it to matlab format
-        format_spec = [format_spec,'%s'];
+        format_spec = [format_spec,format_spec_data];
     elseif sum(i == string_columns) == 1  % set string columns set by user
         format_spec = [format_spec,'%s'];
     else
@@ -95,11 +138,46 @@ if nargin >= 7
 else
     data_all = textscan(fid,format_spec,'Delimiter',char(delim));           % read the whole file at once
 end
-time = datenum(data_all{date_column},date_format);                          % convert time string to matlab format
+
+% Convert time to matlab datenum format
+datemat(1:length(data_all{date_column}),1:6) = 0;
+datemat(:,1) = data_all{date_column+r_yy-1};
+if r_mm ~= 0
+    datemat(:,2) = data_all{date_column+r_mm-1};
+end
+if r_dd ~= 0
+    datemat(:,3) = data_all{date_column+r_dd-1};
+end
+if r_hh ~= 0
+    datemat(:,4) = data_all{date_column+r_hh-1};
+end
+if r_mi ~= 0
+    datemat(:,5) = data_all{date_column+r_mi-1};
+end
+if r_se ~= 0
+    datemat(:,6) = data_all{date_column+r_se-1};
+end
+time = datenum(datemat);
+
 if ischar(data_column)                                                      % is char = 'All columns'
     % Find rows not containing date/time
     index = 1:size(data_all,2);
-    index = index(index ~= date_column);
+    index = index(index ~= date_column+r_yy-1);
+    if r_mm ~= 0
+        index = index(index ~= date_column+r_mm-1);
+    end
+    if r_dd ~= 0
+        index = index(index ~= date_column+r_dd-1);
+    end
+    if r_hh ~= 0
+        index = index(index ~= date_column+r_hh-1);
+    end
+    if r_mi ~= 0
+        index = index(index ~= date_column+r_mi-1);
+    end
+    if r_se ~= 0
+        index = index(index ~= date_column+r_se-1);
+    end
     % Find rows not containing string (if on input)
     if nargin == 8
         for i = 1:length(string_columns)
@@ -107,7 +185,11 @@ if ischar(data_column)                                                      % is
         end
     end
 else                                                                        % otherwise output only selected column(s)
-    index = data_column;
+    if data_column<date_column
+        index = data_column;
+    else
+        index = data_column + max([r_yy,r_mm,r_dd,r_hh,r_mi,r_se])-1;
+    end
 end
 % Read all required columns
 data = cell2mat(data_all(index));
