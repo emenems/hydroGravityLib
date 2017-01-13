@@ -211,6 +211,21 @@ if round(dg*100)/100 ~= round(dg_compare*100)/100
 end
 clear dg
 
+%% replaceNaN
+data_replace = data;
+data_replace([123,150:160]) = NaN;
+[dataout,replaced] = replaceNaN(time,data_replace,time_resol,'linear');
+if length(replaced) ~= 1
+    disp('replaceNaN: wrong output length');
+end
+if replaced(1) ~= time(123) || ~isnan(dataout(150))
+    disp('replaceNaN: incorrect value replaced');
+end
+if isnan(dataout(123))
+    disp('replaceNaN: value not replaced');
+end
+clear dataout replaced
+
 %% readcsv
 [time_out,data_out,header] = readcsv(fullfile('input','readcsv_data.dat'),4,...
     ',',1,'"yyyy-mm-dd HH:MM:SS"','All',{'"NAN"'});
