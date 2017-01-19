@@ -7,16 +7,15 @@ function out = demean(data)
 %               mean of 'out' will be zero.
 %
 %                                             M. Mikolaj, mikolaj@gfz-potsdam.de
-r = find(isnan(data), 1);
 out = data;
-if isempty(r)
-    for i = 1:size(data,2)
+for i = 1:size(data,2)
+	r = find(isnan(data(:,i)));
+	if isempty(r)
         out(:,i) = data(:,i) - mean(data(:,i));
-    end     
-else
-    for i = 1:size(data,2)
-        out(:,i) = data(:,i) - mean(data(~isnan(data(:,i)),i));
-    end 
+	else
+		out(:,i) = data(:,i) - mean(data(~isnan(data(:,i)),i));
+    end  
+	clear r
 end
 
 end % Function

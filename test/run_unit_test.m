@@ -246,6 +246,18 @@ if pressure~=958.704 || round(effect*1000)/1000 ~= round(-18.159*1000)/1000
 end
 clear time_out effect pressure atmacs_url_link_loc atmacs_url_link_glo time_known
 
+%% getEOPeffect
+[~,pol,lod] = getEOPeffect(90,0,datenum(2010,1,1));
+if round(pol*1e+10)/1e+10 ~= 0 || round(lod*1e+10)/1e+10 ~= 0
+    disp('getEOPeffect incorrect output value');
+end
+[time_out,pol,lod] = getEOPeffect(45,10,datenum(2010,1,1),0);
+if round(pol*1e+10)/1e+10 ~= 0 || round(lod*1e+10)/1e+10 ~= 0
+    disp('getEOPeffect incorrect output value');
+end
+if length(time_out) ~= 1
+    disp('getEOPeffect incorrect output length');
+end
 
 %% WRITE OUTPUT
 if check_write == 1
