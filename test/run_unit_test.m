@@ -62,16 +62,12 @@ end
 clear time_out data_out
 
 %% demean
-out = demean(data);
-if mean(out)~=0
-    disp('demean: incorrect output value');
+out = demean(horzcat([1,2,3,NaN,4,5,6,7]',[1:1:7,4]'));
+if size(out,1)~=8 || size(out,2) ~= 2
+    disp('demean: incorrect output length');
 end
-clear out
-
-%% demeanMAT
-out = demean_mat([data,data]);
-if mean(out(:,1))~=0 || mean(out(:,2)) ~= 0
-    disp('demean_mat: incorrect output value');
+if out(1,1) ~= -3 || out(end,2) ~= 0
+    disp('demean: incorrect output value');
 end
 clear out
 
@@ -82,8 +78,8 @@ if length(out) ~= length(data)
 end
 
 %% detrendNaN
-out = detrendNaN(time,data,1);
-if round(sum(out)*1e+11)/1e+11 ~= 0
+[out,fit] = detrendNaN([time;NaN],vertcat(data,NaN),1);
+if round(out(1)*1e+11)/1e+11 ~= 0
     disp('detrendNaN: incorrect output value');
 end
 

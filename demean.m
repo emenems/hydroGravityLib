@@ -1,11 +1,22 @@
 function out = demean(data)
 %DEMEAN substract mean from data
-%   Substract mean (nanmean) from data
+% Input
+%   data    ... data vector or matrix
+% Output
+%   out     ... output vector or matrix (same dimensions as input 'data'). The 
+%               mean of 'out' will be zero.
+%
+%                                             M. Mikolaj, mikolaj@gfz-potsdam.de
 r = find(isnan(data), 1);
+out = data;
 if isempty(r)
-    out = data - mean(data);
+    for i = 1:size(data,2)
+        out(:,i) = data(:,i) - mean(data(:,i));
+    end     
 else
-    out = data - mean(data(~isnan(data)));
+    for i = 1:size(data,2)
+        out(:,i) = data(:,i) - mean(data(~isnan(data(:,i)),i));
+    end 
 end
 
-end
+end % Function
