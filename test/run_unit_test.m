@@ -237,6 +237,20 @@ if time_out(1) ~= datenum(2008,7,15) || data_out(1,1) ~= 0
 end
 clear time_out data_out header
 
+%% getAtmacs
+atmacs_loc = 'http://atmacs.bkg.bund.de/data/results/lm/we_lm2_12km_19deg.grav';
+atmacs_glo = 'http://atmacs.bkg.bund.de/data/results/icon/we_icon384_20deg.grav'; 
+time_known = datenum(2016,01,14,0,0,0); 
+[time_out,effect,pressure] = getAtmacs(atmacs_loc,atmacs_glo,time_known);
+if length(time_out) ~= 1 || length(effect) ~=1 || length(pressure) ~= 1
+    disp('getAtmacs: wrong output length');
+end
+if pressure~=958.704 || round(effect*1000)/1000 ~= round(-18.159*1000)/1000
+    disp('getAtmacs: incorrect output value');
+end
+clear time_out effect pressure atmacs_url_link_loc atmacs_url_link_glo time_known
+
+
 %% WRITE OUTPUT
 if check_write == 1
     % Check if output folder exist

@@ -76,12 +76,13 @@ try
             fprintf(fid,'  Site:Instrument:measurements\n');
             colu = colu - 1;
         end
-        colu = size(data,2)-6;
         fprintf(fid,'\n[UNITS]\n');
+        colu = size(data,2)-6;
         while colu >= 1
             fprintf(fid,'  ?\n');
             colu = colu - 1;
         end
+        colu = size(data,2)-6;
     end
     % Convert NaNs to Flagged values
     switch decimal
