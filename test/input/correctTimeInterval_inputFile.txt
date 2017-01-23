@@ -1,0 +1,12 @@
+% Correction file for correctTimeInterval function. See function help for further details
+% ID: 1 = removing steps, 2 = remove anomalous time intervals (set to NaN), 3 = interpolate intervals linearly, 4 = interpolate intervals using spline
+% CN: is the column number
+% y1: value before step (set to NaN if ID~=1)
+% y2: value after step (set to NaN if ID~=1)
+% comment: string without spaces
+%
+%		starting point (time)	end point (time)    			   				comment
+%ID CN  yyyy mm dd hh mm ss     yyyy mm dd hh mm ss 	y1			y2			do_not_leave_empty_space
+3	1	2010 01	01 04 30 00		2010 01	01 07 30 00		NaN			NaN			linear_interpolation
+2	1	2010 01 02 01 00 00 	2010 01 02 03 00 09		NaN			NaN			set_to_NaN
+1	2	2010 01	02 21 30 00		2010 01	02 21 30 00	  	10			0.0			remove_step_of_10

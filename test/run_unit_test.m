@@ -259,6 +259,20 @@ if length(time_out) ~= 1
     disp('getEOPeffect incorrect output length');
 end
 
+%% correctTimeInterval
+% Insert NaN that will be replaced within the function by interpolated
+% values. In addition 'correct step' = 10.
+data(20:30) = NaN;
+corMatrix = [3,1,datevec(time(19)),datevec(time(31)),NaN,NaN;...
+             1,1,datevec(time(end-10)),datevec(time(end-10)),10,0];
+data_out = correctTimeInterval(time,data,corMatrix);
+if length(data_out(:)) ~= length(data(:))
+    disp('correctTimeInterval incorrect output length');
+end
+if isnan(sum(data_out(20:30))) || (data_out(end-9)-data_out(end-11))~=10
+    disp('correctTimeInterval incorrect output value');
+end
+clear data_out corMatrix
 %% WRITE OUTPUT
 if check_write == 1
     % Check if output folder exist
