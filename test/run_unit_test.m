@@ -317,5 +317,16 @@ if check_plots == 1
     print(gcf,fullfile('output','homogenDataTest_test1.jpg'),'-djpeg','-r300');
     close
     disp('Check output/homogenDataTest_test*.jpg file');
+    
+    %% spetralAnalysis
+    x = 1:1:365*10;
+    y(:,1) = sin(2*pi*1/365*x);
+    y(:,2) = 0.5*sin(2*pi*1/100*x);
+    spectralAnalysis(y,1/86400,'plot',1,'lenFFT',50000,'wind','hann');
+    title('2 peaks: at 100 and 365 (2*higher) days');
+    xlim([1,450]);
+    print(gcf,fullfile('output','spectralAnalysis_test.jpg'),'-djpeg','-r300');
+    close
+    disp('Check output/spectralAnalysis_test.jpg file');
 end
 disp('Test completed.');
