@@ -61,6 +61,18 @@ if sum(data_orig)~= length(time_orig)
 end
 clear time_out data_out
 
+%% data2monthly
+temp_time = transpose(datenum(2016,12,29):1:datenum(2017,3,1));
+[time_out,data_out] = data2monthly(temp_time,temp_time*0+1,1,1);
+if sum(data_out)~= length(time_out(:,1))
+    disp('data2monthly: incorrect output value')
+end
+[time_out,data_out,check_out] = data2monthly(temp_time,temp_time*0+1,2,1);
+if sum(data_out) ~= length(temp_time)
+    disp('data2monthly: incorrect output value')
+end
+clear temp_time time_out data_out
+
 %% demean
 out = demean(horzcat([1,2,3,NaN,4,5,6,7]',[1:1:7,4]'));
 if size(out,1)~=8 || size(out,2) ~= 2
@@ -273,6 +285,18 @@ if isnan(sum(data_out(20:30))) || (data_out(end-9)-data_out(end-11))~=10
     disp('correctTimeInterval incorrect output value');
 end
 clear data_out corMatrix
+
+%% pointDistance
+dist = pointDistance([0;0],[1;0],[0;0],[0;0]);
+if dist(1) ~= 1 | dist(2) ~= 0
+    disp('pointDistance incorrect output value');
+end
+dist = pointDistance(1,1,1,2,3,3);
+if dist ~= 3
+    disp('pointDistance incorrect output value');
+end
+clear dist
+
 %% WRITE OUTPUT
 if check_write == 1
     % Check if output folder exist
