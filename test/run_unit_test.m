@@ -162,6 +162,13 @@ if time_out ~= 20100203040506
 end
 clear time_out
 
+%% pattern2time
+time_out = pattern2time(20100203040506,'second');
+if time_out ~= datenum([2010,02,03,04,05,06])
+    disp('pattern2time: incorrect output value');
+end
+clear time_out
+
 %% mm_convol
 [time_out,data_out] = mmconv(time_orig,data_orig,[0 0 0 1 0 0 0]','valid');
 if length(time_out) ~= length(time_orig)-6
