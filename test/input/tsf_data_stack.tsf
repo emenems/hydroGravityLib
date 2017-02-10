@@ -1,0 +1,23 @@
+[TSF-file] v01.0
+
+
+[UNDETVAL] 9999.999
+
+[TIMEFORMAT] DATETIME
+
+[INCREMENT] 1
+
+[CHANNELS]
+  Location1:Instrument1:Measurement 1
+  Location2:Instrument2:Measurement 2
+
+[UNITS]
+  units1
+  units2
+
+[COMMENT]
+
+[DATA]
+2016 12 16  00 00 11   -1  12 
+2016 12 16  00 00 12   -1  12 
+2016 12 16  00 00 13   -1  12 

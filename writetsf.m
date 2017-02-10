@@ -12,7 +12,7 @@ function writetsf(data,header,fileout,decimal,varargin)
 %               if header == [], default values are used
 %   fileout...  output file name (eg 'SU_SG052_2011_CORMIN.tsf')
 %   decimal...  number of decimal places, between 0 and 6. Higher number
-%               will result in use of '%g' precision 
+%               will result in use of '%.10g' precision 
 %   varargin{1} comment (will be written below [COMMENT]). It should be a
 %               cell area where each element corresponds to new line.
 %               Example: {'This is the first line';'This is the second
@@ -109,7 +109,7 @@ try
             out_prec = '%.6f';
         otherwise
             data(isnan(data)) = 9999.999;
-            out_prec = '%g';
+            out_prec = '%.10g';
     end
     % Add final comment if on input
     if nargin == 5 

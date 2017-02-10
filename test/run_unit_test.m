@@ -247,7 +247,7 @@ clear dataout replaced
 if length(time_out) ~= 5
     disp('readcsv: wrong output length');
 end
-if time_out(1) ~= datenum(2008,7,15) || data_out(1,1) ~= 0
+if time_out(1) ~= datenum(2008,7,15,16,15,0) || data_out(1,1) ~= 0
     disp('readcsv: incorrect output value');
 end
 clear time_out data_out header
@@ -295,7 +295,7 @@ clear data_out corMatrix
 
 %% pointDistance
 dist = pointDistance([0;0],[1;0],[0;0],[0;0]);
-if dist(1) ~= 1 | dist(2) ~= 0
+if dist(1) ~= 1 || dist(2) ~= 0
     disp('pointDistance incorrect output value');
 end
 dist = pointDistance(1,1,1,2,3,3);
@@ -326,6 +326,30 @@ if check_write == 1
     writetsf(dataout,header,fullfile('output','writetsf_test.tsf'),10,comment);
     clear comment dataout header
     disp('Check output/writetsf_test.tsf file');
+    
+    %% stackfiles
+    [time_out,data_out] = stackfiles('in',{fullfile('input','tsf_data.tsf'),...
+                                    fullfile('input','tsf_data_stack.tsf')},...
+                                    'out',fullfile('output','stackfiles_test.tsf'));
+    if length(time_out) ~= 14 || size(data_out,2) ~= 2
+        disp('stackfiles incorrect output size');
+    end
+    if sum(data_out(end,:)) ~= 11 || ~isnan(data_out(end-3,1))
+        disp('stackfiles incorrect output value');
+    end
+    clear data_out time_out
+    disp('Check output/stackfiles_test.tsf file');
+    [time_out,data_out] = stackfiles('in',{fullfile('input','readcsv_data.dat'),...
+                                    fullfile('input','readcsv_data_stack.dat')},...
+                                    'out',fullfile('output','stackfiles_test.dat'));
+    if length(time_out) ~= 7 || size(data_out,2) ~= 4
+        disp('stackfiles incorrect output size');
+    end
+    if data_out(5,2) ~= 0.1
+        disp('stackfiles incorrect output value');
+    end
+    clear data_out time_out
+    disp('Check output/stackfiles_test.dat file');
 end
 
 %% PLOTS: VISUAL CHECK
