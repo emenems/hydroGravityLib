@@ -332,10 +332,10 @@ if check_write == 1
                                     fullfile('input','tsf_data_stack.tsf')},...
                                     'out',fullfile('output','stackfiles_test.tsf'));
     if length(time_out) ~= 14 || size(data_out,2) ~= 2
-        disp('stackfiles incorrect output size');
+        disp('stackfiles incorrect (tsf) output size');
     end
     if sum(data_out(end,:)) ~= 11 || ~isnan(data_out(end-3,1))
-        disp('stackfiles incorrect output value');
+        disp('stackfiles incorrect (tsf) output value');
     end
     clear data_out time_out
     disp('Check output/stackfiles_test.tsf file');
@@ -343,13 +343,24 @@ if check_write == 1
                                     fullfile('input','readcsv_data_stack.dat')},...
                                     'out',fullfile('output','stackfiles_test.dat'));
     if length(time_out) ~= 7 || size(data_out,2) ~= 4
-        disp('stackfiles incorrect output size');
+        disp('stackfiles incorrect (dat) output size');
     end
     if data_out(5,2) ~= 0.1
-        disp('stackfiles incorrect output value');
+        disp('stackfiles incorrect (dat) output value');
     end
     clear data_out time_out
     disp('Check output/stackfiles_test.dat file');
+    [time_out,data_out] = stackfiles('in',{fullfile('input','mglobe_data.txt'),...
+                                    fullfile('input','mglobe_data_stack.txt')},...
+                                    'out',fullfile('output','stackfiles_test.txt'));
+    if length(time_out) ~= 12 || size(data_out,2) ~= 6
+        disp('stackfiles incorrect (txt) output size');
+    end
+    if data_out(7,1) ~= 11 || data_out(8,1) ~= 12 || ~isnan(data_out(9,1))
+        disp('stackfiles incorrect (txt) output value');
+    end
+    clear data_out time_out
+    disp('Check output/stackfiles_test.txt file');
 end
 
 %% PLOTS: VISUAL CHECK

@@ -1,0 +1,24 @@
+% Results of the GHE calculation
+% Station latitude (deg):   	48.24885000
+% Station longitude (deg):   	16.35650000
+% Station height (m):       	 192.700
+% Calculation settings:
+% DEM:	\EXAMPLES\Models\DEM_ETOPO2_example.mat
+% Excluded area:	Greenland
+% Inclusion polygon:	 No inclusion polygon loaded
+% Model:	 GLDAS/NOAH10, layer:	 total
+% Model resolution:	1.00x1.00 deg, Daily/hourly
+% Mass conservation enforced:	on (layer on ocean, gravity response to 1 mm: 0.327 nm/s^2)
+% GHE/LHE threshold (deg):	 0.10
+% Calc. date:	2014/10/29 11:06:28
+% Calc. duration (min):	 4.92
+% Flagged values: NaN
+% Result units: nm/s^2
+% time_matlab   	Date       	Time	 total_eff	 cont_load	 cont_newton	 ocean_load	 ocean_newton  local_TWS(mm)
+734878.500000   	20120110   	120000		   5.77		   4.38		   2.96		  -0.38		  -1.19		  35.40
+734879.500000   	20120111   	120000		   5.78		   4.40		   3.00		  -0.40		  -1.22		  35.29
+734880.500000   	20120112   	120000		   12		   4.42		   3.06		  -0.41		  -1.26		  34.93
+734881.500000   	20120113   	120000		   NaN		   4.54		   3.14		  -0.42		  -1.30		  36.31
+734882.500000   	20120114   	120000		   6.04		   4.62		   3.21		  -0.44		  -1.35		  37.12
+734883.500000   	20120115   	120000		   6.06		   4.64		   3.27		  -0.45		  -1.40		  37.38
+734884.500000   	20120116   	120000		   6.08		   4.64		   3.33		  -0.46		  -1.42		  36.72

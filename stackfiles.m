@@ -6,7 +6,8 @@ function [time,data] = stackfiles(varargin)
 %                   names (may be used multiple times). For multiple files,
 %                   use cell array. 
 %                   Supportef formats: *.tsf, *.dat (campbell 4 header
-%                   lines), *.csv (dygraph datapage)
+%                   lines), *.csv (dygraph datapage), and *.txt (mGlobe 
+%					output)
 %   'path'      ... path to input files (optional)
 %   'out'       ... output file name (including path). Input and output
 %                   files must be in the same file format!
@@ -16,7 +17,7 @@ function [time,data] = stackfiles(varargin)
 %   'data'      ... stacked data vector/matrix
 %
 % Example1
-%   stackfiles('in',{'F1.tsf','F2.tsf'},'path','Y:\','out','Y:\Data\F_Stacked.tsf');
+%   stackfiles('in',{'F1.tsf','F2.tsf'},'path','Y:\','out','Y:\F_Stacked.tsf');
 %
 %                                                    M.Mikolaj
 %                                                    mikolaj@gfz-potsdam.de
@@ -48,27 +49,6 @@ if nargin > 2 && mod(nargin,2) == 0
     end
 elseif nargin > 0 && mod(nargin,2) ~= 0
     error('Set even number of input parameters')
-% else
-%     % Get input path
-%     path_in = uigetdir('Name','Select folder');
-%     % Get input files
-%     list_of_files = ls(path_in);
-%     [selection,OK] = listdlg('ListString',list_of_files,'Name','Select files','ListSize',[round(160*2),round(300*1.1)]);
-%     % Get selected files
-%     if OK
-%         in = 1;
-%         for i = 1:length(selection)
-%             if ~strcmp(list_of_files(selection(i),1),'.')
-%                 file_in{in} = list_of_files(selection(i),:);
-%                 in = in + 1;
-%             end
-%         end
-%     end
-%     
-%     % Get output file
-%     [temp1,temp2] = uiputfile('*.*','Set output file');
-%     output_file = fullfile(temp2,temp1);
-%     clear temp1 temp2
 end
 
 %% Read first input file == reference
@@ -87,9 +67,13 @@ switch lower(file_in{1}(end-2:end))
         [time,data] = readcsv(fullfile(path_in,file_in{1}),4,',',1,'"yyyy-mm-dd HH:MM:SS"','All',{'"NAN"','"-INF"','"INF"'});
     case 'csv'
         [time,data] = readcsv(fullfile(path_in,file_in{1}),1,',',1,'yyyy/mm/dd HH:MM:SS','All',exclude);
+    case 'txt'
+        temp = load(fullfile(path_in,file_in{1}));
+        time = temp(:,1);
+        data = temp(:,2:end);clear temp
 end
 increment = time(2)-time(1);
-in_length = length(time); % will be used to chech new data was appended
+in_length = length(time); % will be used to check new data was appended
 %% Read all other files and stack
 for i = 2:length(file_in)
     % Load file
@@ -100,6 +84,10 @@ for i = 2:length(file_in)
             [ctime,cdata] = readcsv(fullfile(path_in,file_in{i}),4,',',1,'"yyyy-mm-dd HH:MM:SS"','All',exclude);
         case 'csv'
             [ctime,cdata] = readcsv(fullfile(path_in,file_in{i}),1,',',1,'yyyy/mm/dd HH:MM:SS','All',exclude);
+        case 'txt'
+            temp = load(fullfile(path_in,file_in{i}));
+            ctime = temp(:,1);
+            cdata = temp(:,2:end);clear temp
     end
     % Check time resolution (warn only)
     cincrement = ctime(2)-ctime(1);
@@ -121,11 +109,21 @@ for i = 2:length(file_in)
                 data = vertcat(data,data(1,:).*NaN,cdata);
                 time = vertcat(time,time(end)+cincrement,ctime);
             end
-        else % Overlapping => find next following time stamp
+        else % Overlapping => find next following time stamp and check if the 
+            % the 'data' does not contain NaN at such epoch (in that case 
+            % overwrite it with 'cdata')
             r = find(ctime>time(end));
+            data_length = length(time);
             if ~isempty(r) 
-                data = vertcat(data,cdata(r,:));
-                time = vertcat(time,ctime(r,:));
+                last_data = sum(data(data_length,:),2);
+                conc = r(1);
+                while isnan(last_data) && data_length > 1 && conc > 1
+                    conc = conc - 1;
+                    data_length = data_length - 1;
+                    last_data = sum(data(data_length,:),2);
+                end
+                data = vertcat(data(1:data_length,:),cdata(conc:end,:));
+                time = vertcat(time(1:data_length,:),ctime(conc:end,:));
             else
                 fprintf('Warning: %02d file does not contain any new data!\n',i);
             end
@@ -159,26 +157,61 @@ if in_length < length(time) && ~isempty(output_file)
             stackfiles_write(time,data,fullfile(path_in,file_in{1}),...
                             output_file,'%04d/%02d/%02d %02d:%02d:%02d,',...
                             1);
+        case 'txt'
+            stackfiles_write(time,data,fullfile(path_in,file_in{1}),...
+                            output_file,'%12.6f   \t%08.0f  \t%06.0f\t',...
+                            []);
+            % Cut 'yyyymmdd' and 'hhmmdd' from data output
+            data = data(:,3:end);
+            
     end
 end
 end % function
 %% Aux function to write dat/csv data
 function stackfiles_write(time_in,data_in,in_file,out_file,format_out,head)
-    fid_in = fopen(in_file,'r');
+    % mGlobe output
+    % determine header first if not set (== for 'txt/mGlobe' only)
+    if isempty(head)
+        fid_in = fopen(in_file,'r');
+        row = fgetl(fid_in);
+        head_write{1} = row;
+        head = 0;
+        while strcmp(row(1),'%')
+            head = head + 1;
+            row = fgetl(fid_in);
+            head_write{head+1} = row;
+        end
+        fclose(fid_in);
+        clear row 
+        row = head_write;
+        for s = 1:size(data_in,2)-2 % -2 => yyyymmdd and hhmmss are already in format_out
+            if s ~= size(data_in,2)-2
+                format_out = [format_out,'%12.7g\t'];
+            else
+                format_out = [format_out,'%12.7g\n'];
+            end
+        end
+        write_data = [time_in,data_in];
+    else
+        % dat and csv output
+        fid_in = fopen(in_file,'r');
+        for s = 1:head
+            row{s} = fgetl(fid_in);
+        end
+        fclose(fid_in);
+        for s = 1:size(data_in,2)
+            if s ~= size(data_in,2)
+                format_out = [format_out,'%.10g',','];
+            else
+                format_out = [format_out,'%.10g','\n'];
+            end
+        end
+        write_data = [datevec(time_in),data_in];
+    end
     fid_out = fopen(out_file,'w');
     for s = 1:head
-        row = fgetl(fid_in);
-        fprintf(fid_out,'%s\n',row);
+        fprintf(fid_out,'%s\n',row{s});
     end
-    fclose(fid_in);
-    for s = 1:size(data_in,2)
-        if s ~= size(data_in,2)
-            format_out = [format_out,'%.10g',','];
-        else
-            format_out = [format_out,'%.10g','\n'];
-        end
-    end
-    write_data = [datevec(time_in),data_in];
     for s = 1:length(time_in)
         fprintf(fid_out,format_out,write_data(s,:));
     end

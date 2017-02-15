@@ -208,7 +208,7 @@ try
         time = datenum(double(dataArray{1,1}),double(dataArray{1,2}),double(dataArray{1,3}),double(dataArray{1,4}),double(dataArray{1,5}),double(dataArray{1,6}));
         data = cell2mat(dataArray(7:end));
         if ~isempty(undetval)
-            data(round(data*1e+10)./1e+10 == round(undetval*1e+10)./1e+10) = NaN;
+            data(round(data*1e+9)./1e+9 == round(undetval*1e+9)./1e+9) = NaN;
         end
         fclose(fid);
     catch   
