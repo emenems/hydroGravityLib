@@ -11,6 +11,11 @@ function [time,data] = stackfiles(varargin)
 %   'path'      ... path to input files (optional)
 %   'out'       ... output file name (including path). Input and output
 %                   files must be in the same file format!
+%	'tolerance' ... set tolerance of difference between stacked data. By 
+%					default, files are stacked only if data points in i-th 
+%					and i+1 file are identical. Tolerance will set maximum
+%					(absolute) difference. Set either scalar or vector for each 
+%                   data column.
 %
 % Output
 %   'time'      ... stacked time vector (matlab datenum format)
@@ -18,6 +23,10 @@ function [time,data] = stackfiles(varargin)
 %
 % Example1
 %   stackfiles('in',{'F1.tsf','F2.tsf'},'path','Y:\','out','Y:\F_Stacked.tsf');
+%
+% Example2
+%   stackfiles('in',{'F1.tsf','F2.tsf'},'path','Y:\','out',...
+%               'Y:\F_Stacked.tsf','tolerance',0.1);
 %
 %                                                    M.Mikolaj
 %                                                    mikolaj@gfz-potsdam.de
@@ -28,6 +37,7 @@ path_in = '';
 time = [];
 data = [];
 output_file = [];
+tolerance  = 0;
 
 % First check if correct number of input arguments
 if nargin > 2 && mod(nargin,2) == 0
@@ -43,6 +53,8 @@ if nargin > 2 && mod(nargin,2) == 0
                 path_in = varargin{in+1};
             case 'out'
                 output_file = varargin{in+1};
+            case 'tolerance'
+                tolerance = varargin{in+1};
         end
         % Increase by 2 as parameters are in pairs!
         in = in + 2;
@@ -71,6 +83,10 @@ switch lower(file_in{1}(end-2:end))
         temp = load(fullfile(path_in,file_in{1}));
         time = temp(:,1);
         data = temp(:,2:end);clear temp
+end
+% Prepare variables used inside loop
+if length(tolerance)~= size(data,2)
+    tolerance = zeros(size(data,2),1) + tolerance(1);
 end
 increment = time(2)-time(1);
 in_length = length(time); % will be used to check new data was appended
@@ -122,10 +138,22 @@ for i = 2:length(file_in)
                     data_length = data_length - 1;
                     last_data = sum(data(data_length,:),2);
                 end
-                data = vertcat(data(1:data_length,:),cdata(conc:end,:));
-                time = vertcat(time(1:data_length,:),ctime(conc:end,:));
+                % Stack only if overlapping data fullfill the requirements
+                % in terms of telerance. 
+                test_val = 1;
+                for t = 1:size(data,2)
+                    if abs(data(data_length,t) - cdata(conc-1,t)) > abs(tolerance(t))
+                        test_val = 0;
+                    end
+                end
+                if test_val == 1
+                    data = vertcat(data(1:data_length,:),cdata(conc:end,:));
+                    time = vertcat(time(1:data_length,:),ctime(conc:end,:));
+                else
+                    fprintf('Not stacked: %02d (count) file does not contain identical data!\n',i);
+                end
             else
-                fprintf('Warning: %02d file does not contain any new data!\n',i);
+                fprintf('Warning: %02d (count) file does not contain any new data!\n',i);
             end
         end
     end

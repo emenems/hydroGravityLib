@@ -352,11 +352,12 @@ if check_write == 1
     disp('Check output/stackfiles_test.dat file');
     [time_out,data_out] = stackfiles('in',{fullfile('input','mglobe_data.txt'),...
                                     fullfile('input','mglobe_data_stack.txt')},...
-                                    'out',fullfile('output','stackfiles_test.txt'));
+                                    'out',fullfile('output','stackfiles_test.txt'),...
+                                    'tolerance',0);
     if length(time_out) ~= 12 || size(data_out,2) ~= 6
         disp('stackfiles incorrect (txt) output size');
     end
-    if data_out(7,1) ~= 11 || data_out(8,1) ~= 12 || ~isnan(data_out(9,1))
+    if single(data_out(7,1)) ~= single(5.78) || data_out(8,1) ~= 12 || ~isnan(data_out(9,1))
         disp('stackfiles incorrect (txt) output value');
     end
     clear data_out time_out
