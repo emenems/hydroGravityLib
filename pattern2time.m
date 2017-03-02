@@ -8,7 +8,8 @@ function [time_pat] = pattern2time(time_pat,resol)
 %                   'hour':     yyyymmddhh
 %                   'minute':   yyyymmddhhmm
 %                   'second':   yyyymmddhhmmss
-%                   'msecond':   yyyymmddhhmmssmm
+%                   'msecond':  yyyymmddhhmmssmm
+%                   'hhmmss':   hhmmss (without year,month,and day)
 % Output:
 %   time        ... time in datenum format
 %
@@ -52,6 +53,13 @@ elseif strcmp(resol,'msecond')
     hour = floor((time_pat - year*1000000000000 - month*10000000000 - day*100000000)/1000000);
     minute=floor((time_pat - year*1000000000000 - month*10000000000 - day*100000000 - hour*1000000)/10000);
     second=round((time_pat - year*1000000000000 - month*10000000000 - day*100000000 - hour*1000000 - minute*10000));
+elseif strcmp(resol,'hhmmss')
+    hour = floor(time_pat/10000);
+    minute= floor((time_pat - hour*10000)/100);
+    second= floor((time_pat - hour*10000 - minute*100));
+    year = length(hour).*0;
+    month = length(hour).*0;
+    day = length(hour).*0;
 end
 time_pat = datenum(year,month,day,hour,minute,second);
 

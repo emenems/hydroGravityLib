@@ -278,6 +278,14 @@ if length(time_out) ~= 1
     disp('getEOPeffect incorrect output length');
 end
 
+%% getEOSTloading
+url_eost = 'http://loading.u-strasbg.fr/GGP/hydro/OPERA/AP09166h.hyd';
+[time_out,data_out,channels] = getEOSTloading(url_eost);
+% Check just the size, value can change with time (model updates)
+if size(data_out,2) ~= 3 || length(channels) ~= 3 || length(time_out) <= 1
+	disp('getEOSTloading incorrect output length');
+end
+
 %% correctTimeInterval
 % Insert NaN that will be replaced within the function by interpolated
 % values. In addition 'correct step' = 10.

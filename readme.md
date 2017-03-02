@@ -18,6 +18,7 @@ Each **function contains help including example usage**. Thus only brief descrip
 * `findTimeStep`: identify time steps and fill them with NaNs
 * `getAtmacs`: get and sum [Atmacs](http://atmacs.bkg.bund.de/docs/data.php) effect
 * `getEOPeffect`: get Pol/[EOP](http://hpiers.obspm.fr/iers/eop/eopc04/eopc04_IAU2000.62-now) coordinates and compute Polar motion effect an LOD
+* `getEOSTloading`: get loading products (gravity effects) as provided by [EOST](http://loading.u-strasbg.fr) Loading Service
 * `homogenDataTest`: [test](http://www.fao.org/docrep/X0490E/x0490e0l.htm) input time series for homogeneity
 * `loadtsf`: load time series formatted in [TSoft](http://seismologie.oma.be/en/downloads/tsoft) format 
 * `load_SU_meteo`: load time series stored in specific format (used by GFZ Section 1.3 in Sutherland)
