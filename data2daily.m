@@ -1,6 +1,6 @@
 function [time_out,data_out,check_out] = data2daily(time,data,convertSwitch,nanSwitch)
 %DATA2DAILY Convert/aggregate input data to daily means/sums
-% User can convert = create dailyy means or sums for input time series.
+% User can convert = create daily means or sums for input time series.
 % Use data2monthly function to generate monthly data.
 %
 % Input:
@@ -8,6 +8,8 @@ function [time_out,data_out,check_out] = data2daily(time,data,convertSwitch,nanS
 %   data        ... data matrix or vector.
 %   convertSwitch ... 1 = daily means (e.g., for temperature)
 %                   2 = daily sums (e.g., for precipitation)
+%                   3 = daily minimum (e.g., for ET0)
+%                   4 = daily maximum (e.g., for ET0)
 %   nanSwitch   ... 0 = NaN on input => NaN on output
 %                   1 = NaN on input will be removed => no NaN on output
 %                   for the whole day (output time will miss the days with
@@ -27,7 +29,7 @@ function [time_out,data_out,check_out] = data2daily(time,data,convertSwitch,nanS
 %                   this variable shows how many elements should be present
 %                   if constant sampling used.
 % Requirements:
-%   This funcion does not require further function.
+%   This function does not require further function.
 %
 % Example
 %   [time_out,data_out] = data2daily(time,data,1,0);
@@ -78,6 +80,7 @@ j = 1;
 c = 1;
 % Starting value
 total = data(1,:);
+total_ext = data(1,:);
 % Loop for all input values
 for i = 2:length(data)
     if timeID(j) ~= time_pattern(i)
@@ -87,15 +90,25 @@ for i = 2:length(data)
         elseif convertSwitch == 2  % Total sum
             data_out(j,:) = total;
             check_out(j,1) = c;
+        elseif convertSwitch >= 3 && convertSwitch <=4 % minimum | maximum
+            data_out(j,:) = total_ext;
+            check_out(j,1) = c;
         end
         % Move to next hour
         j = j + 1;
         % Reset counts
         c = 1;
         total = data(i,:);
+        total_ext = data(i,:);
     else
         % Otherwise, keep counting
         total = total + data(i,:);
+        if convertSwitch==3
+            total_ext(data(i,:)<total_ext) = data(i,data(i,:)<total_ext);
+        end
+        if convertSwitch==4
+            total_ext(data(i,:)>total_ext) = data(i,data(i,:)>total_ext);
+        end
         c = c + 1;
     end
 end
@@ -116,6 +129,10 @@ if ~isempty(r)
             data_out(end,:) = mean(temp,1);
         case 2 % => aggregate data
             data_out(end,:) = sum(temp,1);
+        case 3 % => find minimum value
+            data_out(end,:) = min(min(temp,1));
+        case 4 % => find maximum value
+            data_out(end,:) = max(max(temp,1));
     end
 end
 

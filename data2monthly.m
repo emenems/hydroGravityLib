@@ -1,5 +1,5 @@
 function [time_out,data_out,check_out] = data2monthly(time,data,convertSwitch,nanSwitch)
-%DATA2MONTHLY Convert/aggregate input data to monhly means/sums
+%DATA2MONTHLY Convert/aggregate input data to monthly means/sums/min/max
 % User can convert = create monthly means or sums for input time series.
 %
 % Input:
@@ -7,6 +7,8 @@ function [time_out,data_out,check_out] = data2monthly(time,data,convertSwitch,na
 %   data        ... data matrix or vector.
 %   convertSwitch ... 1 = monthly means (e.g., for temperature)
 %                   2 = monthly sums (e.g., for precipitation)
+%                   3 = monthly minimum (e.g., for ET0)
+%                   4 = monthly maximum (e.g., for ET0)
 %   nanSwitch   ... 0 = NaN on input => NaN on output
 %                   1 = NaN on input will be removed => no NaN on output
 %
@@ -19,7 +21,7 @@ function [time_out,data_out,check_out] = data2monthly(time,data,convertSwitch,na
 %                   this variable shows how many elements should be present
 %                   if constant sampling used.
 % Requirements:
-%   This funcion uses:
+%   This function uses:
 %       mm_daysInMonth.m
 % Example
 %   [time_out,data_out] = data2monthly(time,data,1,0);
@@ -51,7 +53,7 @@ if (nanSwitch == 1)
 end
 % First create unique time ID for each month  = yyyymm
 timeID = year*100+month;
-timeID = unique(timeID);    % remove redundand values
+timeID = unique(timeID);    % remove redundant values
 % Declare output variables
 time_out = [floor(timeID/100),timeID-floor(timeID/100)*100]; % converts yyyymm -> [yyyy,mm]
 data_out(1:length(timeID),1:size(data,2)) = NaN;
@@ -67,6 +69,7 @@ j = 1;
 c = 1;
 % Starting value
 total = data(1,:);
+total_ext = data(1,:);
 % Loop for all input values
 for i = 2:length(data)
     if timeID(j) ~= time_pattern(i)
@@ -76,15 +79,25 @@ for i = 2:length(data)
         elseif convertSwitch == 2  % Total sum
             data_out(j,:) = total;
             check_out(j,1) = c;
+        elseif convertSwitch >= 3 && convertSwitch <=4 % minimum | maximum
+            data_out(j,:) = total_ext;
+            check_out(j,1) = c;
         end
         % Move to next hour
         j = j + 1;
         % Reset counts
         c = 1;
         total = data(i,:);
+        total_ext = data(i,:);
     else
         % Otherwise, keep counting
         total = total + data(i,:);
+        if convertSwitch==3
+            total_ext(data(i,:)<total_ext) = data(i,data(i,:)<total_ext);
+        end
+        if convertSwitch==4
+            total_ext(data(i,:)>total_ext) = data(i,data(i,:)>total_ext);
+        end
         c = c + 1;
     end
 end
@@ -106,6 +119,10 @@ if ~isempty(r)
             data_out(end,:) = mean(temp,1);
         case 2 % => aggregate data
             data_out(end,:) = sum(temp,1);
+        case 3 % => find minimum value
+            data_out(end,:) = min(min(temp,1));
+        case 4 % => find maximum value
+            data_out(end,:) = max(max(temp,1));
     end
 end
 % Compute days in month

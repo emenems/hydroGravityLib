@@ -43,6 +43,23 @@ end
 if sum(data_orig)~= length(time_orig)
     disp('data2daily: incorrect output value')
 end
+% Find extremes = min|max
+data_temp = data;data_temp([10,end]) = [-10,10];
+[time_out,data_out,~] = data2daily(time,data_temp,3,1);
+if (length(time_out(:,1))~=total_days)
+    disp('data2daily: incorrect output length');
+end
+if data_out(1)~= data_temp(10)
+    disp('data2daily: incorrect output value')
+end
+[time_out,data_out,~] = data2daily(time,data_temp,4,1);
+if (length(time_out(:,1))~=total_days)
+    disp('data2daily: incorrect output length');
+end
+if data_out(end)~= data_temp(end)
+    disp('data2daily: incorrect output value')
+end
+clear data_temp time_out data_out
 
 %% data2hourly
 [time_out,data_out] = data2hourly(time,data,1,1);
@@ -59,7 +76,23 @@ end
 if sum(data_orig)~= length(time_orig)
     disp('data2daily: incorrect output value')
 end
-clear time_out data_out
+% Find extremes = min|max
+data_temp = data;data_temp([1,end]) = [-10,10];
+[time_out,data_out,~] = data2hourly(time,data_temp,3,1);
+if (length(time_out(:,1))~=((total_days-1)*24+1))
+    disp('data2hourly: incorrect min output length');
+end
+if data_out(1)~= data_temp(1)
+    disp('data2hourly: incorrect min output value')
+end
+[time_out,data_out,~] = data2hourly(time,data_temp,4,1);
+if (length(time_out(:,1))~=((total_days-1)*24+1))
+    disp('data2hourly: incorrect max output length');
+end
+if data_out(end)~= data_temp(end)
+    disp('data2hourly: incorrect max output value')
+end
+clear data_temp time_out data_out
 
 %% data2monthly
 temp_time = transpose(datenum(2016,12,29):1:datenum(2017,3,1));
@@ -72,6 +105,17 @@ if sum(data_out) ~= length(temp_time)
     disp('data2monthly: incorrect output value')
 end
 clear temp_time time_out data_out
+% Find extremes = min|max
+data_temp = data;data_temp([1,end]) = [-10,10];
+[time_out,data_out,~] = data2monthly(time,data_temp,3,1);
+if data_out(1)~= data_temp(1)
+    disp('data2monthly: incorrect min output value')
+end
+[time_out,data_out,~] = data2monthly(time,data_temp,4,1);
+if data_out(end)~= data_temp(end)
+    disp('data2monthly: incorrect max output value')
+end
+clear data_temp time_out data_out
 
 %% demean
 out = demean(horzcat([1,2,3,NaN,4,5,6,7]',[1:1:7,4]'));
@@ -104,6 +148,19 @@ if id_out(1,2)+1 ~= ind_rem
     disp('findTimeStep: incorrect output value');
 end
 clear time_out data_out id_out id_in
+
+%% humidityConvert
+% Dew Point: http://dpcalc.org
+data_out = humidityConvert([50 75],[20 -1],'dew');
+if round(data_out(1))~= 9 || round(data_out(2))~= -5
+    disp('humidityConvert dew point: incorrect output value');
+end
+% Absolute humidity
+data_out = humidityConvert([60 75],[25 -1],'absolute');
+if round(data_out(1)*1000)/1000~= 0.014 || round(data_out(2)*1000)/1000~= 0.003
+    disp('humidityConvert absolute humidity: incorrect output value');
+end
+clear data_out
 
 %% load_SU_meteo
 [time_out,data_out] = load_SU_meteo(fullfile('input','SU_meteo_data.asc'));
