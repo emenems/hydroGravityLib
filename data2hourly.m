@@ -119,9 +119,9 @@ if ~isempty(r)
     elseif convertSwitch == 2 
         data_out(end,:) = sum(data(r,:),1);
     elseif convertSwitch == 3 % => find minimum value
-        data_out(end,:) = min(data(r,:),1);
+        data_out(end,:) = min(data(r,:),[],1);
     elseif convertSwitch ==  4 % => find maximum value
-        data_out(end,:) = max(data(r,:),1);
+        data_out(end,:) = max(data(r,:),[],1);
     end
 end
 

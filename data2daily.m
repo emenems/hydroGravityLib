@@ -130,9 +130,9 @@ if ~isempty(r)
         case 2 % => aggregate data
             data_out(end,:) = sum(temp,1);
         case 3 % => find minimum value
-            data_out(end,:) = min(min(temp,1));
+            data_out(end,:) = min(min(temp,[],1));
         case 4 % => find maximum value
-            data_out(end,:) = max(max(temp,1));
+            data_out(end,:) = max(max(temp,[],1));
     end
 end
 
