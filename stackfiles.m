@@ -16,6 +16,8 @@ function [time,data] = stackfiles(varargin)
 %					and i+1 file are identical. Tolerance will set maximum
 %					(absolute) difference. Set either scalar or vector for each 
 %                   data column.
+%	'precision' ... number of decimal places. By default uses same precision as 
+%					input (=%.g). Example: 2 == 2 decimals (%.2f will be used).
 %
 % Output
 %   'time'      ... stacked time vector (matlab datenum format)
@@ -26,7 +28,7 @@ function [time,data] = stackfiles(varargin)
 %
 % Example2
 %   stackfiles('in',{'F1.tsf','F2.tsf'},'path','Y:\','out',...
-%               'Y:\F_Stacked.tsf','tolerance',0.1);
+%               'Y:\F_Stacked.tsf','tolerance',0.1,'precision','%.2f');
 %
 %                                                    M.Mikolaj
 %                                                    mikolaj@gfz-potsdam.de
@@ -38,6 +40,7 @@ time = [];
 data = [];
 output_file = [];
 tolerance  = 0;
+out_precision = [];
 
 % First check if correct number of input arguments
 if nargin > 2 && mod(nargin,2) == 0
@@ -55,6 +58,8 @@ if nargin > 2 && mod(nargin,2) == 0
                 output_file = varargin{in+1};
             case 'tolerance'
                 tolerance = varargin{in+1};
+            case 'precision'
+                out_precision = varargin{in+1};
         end
         % Increase by 2 as parameters are in pairs!
         in = in + 2;
@@ -175,20 +180,45 @@ if in_length < length(time) && ~isempty(output_file)
             for i = 1:length(file_in)
                 comment{end+1,1} = file_in{i};
             end
+			% Set output precision
+			if ~isempty(out_precision)
+				out_decimals = out_precision;
+			else
+				out_decimals = 999;
+			end
             % Write result
-            writetsf([datevec(time),data],header,output_file,999,comment);
+            writetsf([datevec(time),data],header,output_file,out_decimals,...
+					comment);
         case 'dat'
+			% Set output precision
+			if ~isempty(out_precision)
+				out_decimals = ['%.',num2str(out_precision),'f'];
+			else
+				out_decimals = '%.10g';
+			end
             stackfiles_write(time,data,fullfile(path_in,file_in{1}),...
                             output_file,'"%04d-%02d-%02d %02d:%02d:%02d",',...
-                            4);
+                            4,out_decimals);
         case 'csv'
+			% Set output precision
+			if ~isempty(out_precision)
+				out_decimals = ['%.',num2str(out_precision),'f'];
+			else
+				out_decimals = '%.10g';
+			end
             stackfiles_write(time,data,fullfile(path_in,file_in{1}),...
                             output_file,'%04d/%02d/%02d %02d:%02d:%02d,',...
-                            1);
+                            1,out_decimals);
         case 'txt'
+			% Set output precision
+			if ~isempty(out_precision)
+				out_decimals = ['%12.',num2str(out_precision),'f'];
+			else
+				out_decimals = '%12.7g';
+			end
             stackfiles_write(time,data,fullfile(path_in,file_in{1}),...
                             output_file,'%12.6f   \t%08.0f  \t%06.0f\t',...
-                            []);
+                            [],out_decimals);
             % Cut 'yyyymmdd' and 'hhmmdd' from data output
             data = data(:,3:end);
             
@@ -196,7 +226,7 @@ if in_length < length(time) && ~isempty(output_file)
 end
 end % function
 %% Aux function to write dat/csv data
-function stackfiles_write(time_in,data_in,in_file,out_file,format_out,head)
+function stackfiles_write(time_in,data_in,in_file,out_file,format_out,head,out_decimals)
     % mGlobe output
     % determine header first if not set (== for 'txt/mGlobe' only)
     if isempty(head)
@@ -214,9 +244,9 @@ function stackfiles_write(time_in,data_in,in_file,out_file,format_out,head)
         row = head_write;
         for s = 1:size(data_in,2)-2 % -2 => yyyymmdd and hhmmss are already in format_out
             if s ~= size(data_in,2)-2
-                format_out = [format_out,'%12.7g\t'];
+				format_out = [format_out,out_decimals,'\t'];
             else
-                format_out = [format_out,'%12.7g\n'];
+                format_out = [format_out,out_decimals,'\n'];
             end
         end
         write_data = [time_in,data_in];
@@ -229,9 +259,9 @@ function stackfiles_write(time_in,data_in,in_file,out_file,format_out,head)
         fclose(fid_in);
         for s = 1:size(data_in,2)
             if s ~= size(data_in,2)
-                format_out = [format_out,'%.10g',','];
+                format_out = [format_out,out_decimals,','];
             else
-                format_out = [format_out,'%.10g','\n'];
+                format_out = [format_out,out_decimals,'\n'];
             end
         end
         write_data = [datevec(time_in),data_in];

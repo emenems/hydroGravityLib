@@ -226,6 +226,27 @@ if ~strcmp(strrep(channel_names{2},' ',''),'Measurement2')
 end
 clear tout dout units channel_names
 
+%% loadggp
+[time_out,data_out,header,blocks,blocks_header] = loadggp('file_in',...
+                                    fullfile('input','loadggp_data.ggp'),...
+                                    'nanval',9999.999,'offset',1);
+if length(time_out) ~= 409 || length(data_out) ~= 409 || size(header,1) ~= 2 ||...
+   size(blocks,1) ~= 2 || size(blocks_header,1) ~= 2
+    disp('loadggp: incorrect output length');
+end
+if time_out(2) ~= datenum(2017,08,26,1,0,0)
+    disp('loadggp: incorrect output time');
+end
+if data_out(1,1) ~= 0 || data_out(1,2) ~= 1
+    disp('loadggp: incorrect output data');
+end
+if data_out(end,1) ~= 11 || ~isnan(data_out(end-1,2))
+    disp('loadggp: incorrect output data (offset correction or NaN)');
+end
+if blocks(2,1) ~= datenum(2017,09,03) || blocks(2,2) ~= 10
+    disp('loadggp: incorrect output data (block time or data not correct)');
+end
+
 %% LonLat2psi
 psi = LonLat2psi(0,0,0,0);
 if psi ~= 0
@@ -418,6 +439,23 @@ if check_write == 1
     {'DataOut=1','DataOut=0.1'},fullfile('output','write4dygraph_test.csv'));
     disp('Check output/write4dygraph_test.csv file');
     
+    %% writeggp
+    time = vertcat([datenum(2010,1,1):1/24:datenum(2010,1,2,9,0,0)]',...
+                   [datenum(2010,1,2,14,0,0):1/24:datenum(2010,1,2,19,0,0)]');
+    data = horzcat(ones(length(time),1)+0.12345,...
+                    zeros(length(time),1)+0.1);
+    data(4:10,2) = NaN;                
+    header_in = {'Station','Wettzell';...
+                'Author','M. Mikolaj (mikolaj@gfz-potsdam.de)'};
+    header_add = {'This is a test of the writeggp.m function'};
+    output_file = fullfile('output','writeggp_test.ggp');
+    writeggp('time',time,'data',data,'header_offset',21,'header',header_in,...
+             'header_add',header_add,'channels',{'gravity','pressure'},...
+             'units',{'V','hPa'},'output_file',output_file,'out_precision','%10.6f',...
+             'format','preterna','blocks',[datenum(2010,1,2,12,0,0),10,20],...
+             'blocks_header',{'iGrav006',1.0,1.0,0.0,3},'nanval',9999.999);
+    disp('Check output/writeggp_test.ggp file');
+    
     %% writetsf
     header = {'Location1','Instrument1','DataOut=1','units1';...
               'Location2','Instrument2','DataOut=0.1','units2'};
@@ -441,7 +479,7 @@ if check_write == 1
     disp('Check output/stackfiles_test.tsf file');
     [time_out,data_out] = stackfiles('in',{fullfile('input','readcsv_data.dat'),...
                                     fullfile('input','readcsv_data_stack.dat')},...
-                                    'out',fullfile('output','stackfiles_test.dat'));
+                                    'out',fullfile('output','stackfiles_test.dat'),'precision',4);
     if length(time_out) ~= 7 || size(data_out,2) ~= 4
         disp('stackfiles incorrect (dat) output size');
     end

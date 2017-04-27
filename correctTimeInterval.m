@@ -8,6 +8,9 @@ function data = correctTimeInterval(time,data,varargin)
 %   data        ... data vector or matrix
 %   varargin{1} ... input file (=string) or matrix corresponding to read 
 %                   input file (see below)
+%   varargin{2} ... switch to use either C2 (see below) == 0, or selected
+%                   column, e.g. ==2 (=>correct second column in input data
+%                   matrix)
 % Input file (or matrix) format:
 %   % Header starts with '%'
 %   % C1 C2 C3   C4 C5 C6 C7 C8   C9  C10 C11 C12 C13 C14  C15  C15 C16
@@ -52,7 +55,11 @@ if ischar(varargin{1})
 else
     in = varargin{1};
 end
-
+if nargin == 4
+    if varargin{2} > 0
+        in(:,2) = varargin{2};
+    end
+end
 %% Run the correction algorithm for all correctors
 if ~isempty(in)
     % Read channe indices (fixed file structure)
