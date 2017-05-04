@@ -184,6 +184,27 @@ if id_out(1,2)+1 ~= ind_rem
 end
 clear time_out data_out id_out id_in
 
+%% fillnans
+time_in = [datenum(2000,1,1):1/24:datenum(2000,1,2)]';
+data_in = [time_in*0+1,time_in*0+2];
+data_in(10:11,1) = NaN; % will be interpolated
+data_in(17:23,1) = NaN; % will NOT be interpolated
+data_in(14,2) = NaN; % will be interpolated
+data_in(18,2) = NaN; % will be interpolated
+max_wind = 3; % => 3 hours
+[data,id_time,id_col] = fillnans('data',data_in,'time',time_in,...
+                        'max_wind',max_wind);
+if isnan(data(10,1)+data(11,1)+data(14,2)+data(18,2))
+    disp('fillnans: incorrect output value (NaN not removed)');
+end
+if single(id_time(1,1)) ~=  single(time(10))
+    disp('fillnans: incorrect output time value (id_time)');
+end
+if id_col(1,2)
+    disp('fillnans: incorrect output id value (id_col)');
+end
+clear time_in data_in data time id_time id_col
+
 %% humidityConvert
 % Dew Point: http://dpcalc.org
 data_out = humidityConvert([50 75],[20 -1],'dew');

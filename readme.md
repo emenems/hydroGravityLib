@@ -15,13 +15,14 @@ Each **function contains help including example usage**. Thus only brief descrip
 * `demean`: subtract mean value from input data (vector or matrix)
 * `denan`: simple removal of NaNs (by reducing length of the input vector)
 * `detrendNaN`: subtract required polynomial fit from input vector
-* `et0calc`: compute potential/reference evapotranspiration using Penman-Monteith FAO equation 
+* `et0calc`: compute potential/reference evapotranspiration using Penman-Monteith FAO equation
 * `findTimeStep`: identify time steps and fill them with NaNs
 * `getAtmacs`: get and sum [Atmacs](http://atmacs.bkg.bund.de/docs/data.php) effect
 * `getEOPeffect`: get Pol/[EOP](http://hpiers.obspm.fr/iers/eop/eopc04/eopc04_IAU2000.62-now) coordinates and compute Polar motion effect an LOD
 * `getEOSTloading`: get loading products (gravity effects) as provided by [EOST](http://loading.u-strasbg.fr) Loading Service
 * `homogenDataTest`: [test](http://www.fao.org/docrep/X0490E/x0490e0l.htm) input time series for homogeneity
 * `loadtsf`: load time series formatted in [TSoft](http://seismologie.oma.be/en/downloads/tsoft) format
+* `loadggp`: load time series formatted in [GGP/IGETS](http://doi.org/10.2312/GFZ.b103-16087) format
 * `load_SU_meteo`: load time series stored in specific format (used by GFZ Section 1.3 in Sutherland)
 * `LonLat2psi`: convert [WGS84](https://en.wikipedia.org/wiki/World_Geodetic_System) longitude and latitude to spherical distance
 * `mmconv`: convolution tailored for filtering of time series
@@ -42,3 +43,4 @@ Each **function contains help including example usage**. Thus only brief descrip
 * `time2pattern`: convert [datenum](mathworks.com/help/matlab/ref/datenum.html) format to required time pattern, e.g. yyyymmdd
 * `write4dygraph`: save/write input time series to [Dygraph](http://dygraphs.com/data.html#csv) format
 * `writetsf`: save/write time series to [TSoft](http://seismologie.oma.be/en/downloads/tsoft) format
+* `writeggp`: save/write time series to [GGP/IGETS](http://doi.org/10.2312/GFZ.b103-16087) format

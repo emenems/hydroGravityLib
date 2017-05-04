@@ -23,9 +23,14 @@ fid = fopen(fileID,'r');
 row = fgetl(fid);
 % Count header
 head = 0;
+% Remove one column in case data start with empty space
+rem_column = 0;
 % Read until numeric values
 while isnan(str2double(row(1)))
     if strcmp(row(1),'-')
+        break;
+    elseif strcmp(row(1),' ')
+        rem_column = 1;
         break;
     else
         % Split input/current row
@@ -63,6 +68,9 @@ data = dlmread(fileID,' ',head,0);
 % Transpose/flip upside down the input data to be get correct values with
 % respect to x,y (meshgrid)
 dem.height = flipud(data);
+if rem_column
+    dem.height(:,1) = [];
+end
 % Compute x, y grid
 [dem.x,dem.y] = meshgrid(xll+resol/2:resol:xll+resol/2+resol*(ncols-1),...
                          yll+resol/2:resol:yll+resol/2+resol*(nrows-1));

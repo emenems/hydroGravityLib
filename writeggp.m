@@ -74,7 +74,7 @@ data = [];
 blocks = [];
 output_file = [];
 out_precision = '%10.6f';
-nanvalues = 9999.999;
+nanvalues = '9999.999';
 
 %% Read user input
 % First check if correct number of input arguments
@@ -108,7 +108,7 @@ if nargin > 2 && mod(nargin,2) == 0
             case 'out_precision'
                 out_precision = varargin{in+1};
             case 'nanval'
-                nanvalues = varargin{in+1};
+                nanvalues = num2str(varargin{in+1});
         end
         % Increase by 2 as parameters are in pairs!
         in = in + 2;
@@ -154,18 +154,17 @@ try
             out_precision = {out_precision};
         end
         for i = 1:size(data,2)
-            if length(out_precision) > 1 && length(out_precision) == size(data,2)
-                temp_format = [temp_format,' ',out_precision{i}];
-            else 
-                temp_format = [temp_format,' ',char(out_precision)];
+            if length(out_precision) == 1 && i > 1
+                out_precision(i) = out_precision(1);
             end
+            temp_format = [temp_format,out_precision{i}];
         end    
     end
     temp_format = [temp_format,'\n'];
     % Convert matlab time to yyyymmdd...
     [yyyy,mm,dd,hh,mi,ss] = datevec(time);
     % Remplace NaNs and prepare for writing
-    data(isnan(data)) = nanvalues;
+%     data(isnan(data)) = nanvalues;
     data = [yyyy,mm,dd,hh,mi,ss,data];
     out_format = ['%04d%02d%02d %02d%02d%02.0f',temp_format];
     % Find blocks in time/data
@@ -205,7 +204,20 @@ try
         fprintf(fid,'77777777       ');
         fprintf(fid,temp_format,zeros(1,size(data,2)-6));
         for i = block_start(j):block_stop(j)
-            fprintf(fid,out_format,data(i,:));
+            if ~isnan(sum(data(i,:),2))
+                fprintf(fid,out_format,data(i,:));
+            else
+                fprintf(fid,'%04d%02d%02d %02d%02d%02.0f',data(i,1:6));
+                for c = 7:length(data(i,:))
+                    if isnan(data(i,c))
+                        temp = strsplit(out_precision{c-6},'.');
+                        fprintf(fid,[temp{1},'s'],nanvalues);
+                    else
+                        fprintf(fid,out_precision{c-6},data(i,c));
+                    end
+                end
+                fprintf(fid,'\n');
+            end
         end
         % End block
         fprintf(fid,'99999999\n');
