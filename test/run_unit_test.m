@@ -1,6 +1,7 @@
 %% Kind of a unit test for all functions
 % Numerical or dimension inaccuracies will be displayed. Runtime errors will be 
-% thrown in command prompt as usual
+% thrown in command prompt as usual. Warnings, such as "Polynomial is badly 
+% conditioned" can be ignored.
 clear
 close all
 clc
@@ -185,25 +186,26 @@ end
 clear time_out data_out id_out id_in
 
 %% fillnans
-time_in = [datenum(2000,1,1):1/24:datenum(2000,1,2)]';
-data_in = [time_in*0+1,time_in*0+2];
-data_in(10:11,1) = NaN; % will be interpolated
-data_in(17:23,1) = NaN; % will NOT be interpolated
-data_in(14,2) = NaN; % will be interpolated
-data_in(18,2) = NaN; % will be interpolated
+time_in = [datenum(2000,1,1):1/24:datenum(2000,1,1,20,0,0)]';
+data_in = [time_in*0+1,time_in*0+2,time_in*0+3];
+data_in(5:6,1) = NaN; % will be interpolated
+data_in(12:17,1) = NaN; % will NOT be interpolated
+data_in(9,2:3) = NaN; % will be interpolated
+data_in(13,2:3) = NaN; % will be interpolated
+data_in(end,3) = NaN; % will not be replaced
 max_wind = 3; % => 3 hours
-[data,id_time,id_col] = fillnans('data',data_in,'time',time_in,...
+[data_out,id_time,id_col] = fillnans('data',data_in,'time',time_in,...
                         'max_wind',max_wind);
-if isnan(data(10,1)+data(11,1)+data(14,2)+data(18,2))
+if isnan(data_out(5,1)+data_out(6,1)+data_out(9,2)+data_out(13,2))
     disp('fillnans: incorrect output value (NaN not removed)');
 end
-if single(id_time(1,1)) ~=  single(time(10))
+if single(id_time(1,1)) ~=  single(time_in(5))
     disp('fillnans: incorrect output time value (id_time)');
 end
-if id_col(1,2)
+if id_col(1,2) || sum(id_col(3,:))~=2
     disp('fillnans: incorrect output id value (id_col)');
 end
-clear time_in data_in data time id_time id_col
+clear time_in data_in id_time id_col
 
 %% humidityConvert
 % Dew Point: http://dpcalc.org
@@ -359,21 +361,6 @@ if round(dg*100)/100 ~= round(dg_compare*100)/100
     disp('cylinderEffect: incorrect output value');
 end
 clear dg
-
-%% replaceNaN
-data_replace = data;
-data_replace([123,150:160]) = NaN;
-[dataout,replaced] = replaceNaN(time,data_replace,time_resol,'linear');
-if length(replaced) ~= 1
-    disp('replaceNaN: wrong output length');
-end
-if replaced(1) ~= time(123) || ~isnan(dataout(150))
-    disp('replaceNaN: incorrect value replaced');
-end
-if isnan(dataout(123))
-    disp('replaceNaN: value not replaced');
-end
-clear dataout replaced
 
 %% readcsv
 [time_out,data_out,header] = readcsv(fullfile('input','readcsv_data.dat'),4,...

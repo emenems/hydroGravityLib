@@ -90,8 +90,7 @@ while ischar(row)
     end
     row = fgetl(fid);cr = cr+1;
 end
-fclose(fid);
-fid = fopen(input_tsf);
+frewind(fid);
 row = fgetl(fid);cr = 1;
 % Get UNITS
 while ischar(row)
@@ -113,8 +112,7 @@ while ischar(row)
     end
     row = fgetl(fid);cr = cr+1;
 end
-fclose(fid);
-fid = fopen(input_tsf);
+frewind(fid);
 row = fgetl(fid);cr = 1;
 % Get COUNT
 while ischar(row)
@@ -128,8 +126,7 @@ while ischar(row)
     end
     row = fgetl(fid);cr = cr+1;
 end
-fclose(fid);
-fid = fopen(input_tsf);
+frewind(fid);
 row = fgetl(fid);cr = 1;
 % Get COMMENT
 while ischar(row)
@@ -154,8 +151,7 @@ while ischar(row)
     end
     row = fgetl(fid);cr = cr+1;
 end
-fclose(fid);
-fid = fopen(input_tsf);
+frewind(fid);
 row = fgetl(fid);cr = 1;
 % Get DATA (stop)
 while ischar(row)
@@ -167,7 +163,6 @@ while ischar(row)
     end
     row = fgetl(fid);cr = cr+1;
 end
-fclose(fid);
 % create format specification and get channel names only ('channels'
 % contain also info about Site:Measurement:Name
 formatSpec = '%d%d%d%d%d%d';
@@ -180,7 +175,7 @@ try
     % Get Data
     
     try                                                                     % assumed, file contains COUNTINFO 
-        fid = fopen(input_tsf,'r');
+        frewind(fid);
         for i = 1:data_start
             row = fgetl(fid);
         end
@@ -205,7 +200,8 @@ try
             end
         end
         dataArray = textscan(fid, formatSpec, countinfo);
-        time = datenum(double(dataArray{1,1}),double(dataArray{1,2}),double(dataArray{1,3}),double(dataArray{1,4}),double(dataArray{1,5}),double(dataArray{1,6}));
+        time = datenum(double(dataArray{1}),double(dataArray{2}),double(dataArray{3}),...
+            double(dataArray{4}),double(dataArray{5}),double(dataArray{6}));
         data = cell2mat(dataArray(7:end));
         if ~isempty(undetval)
             data(round(data*1e+9)./1e+9 == round(undetval*1e+9)./1e+9) = NaN;
@@ -228,6 +224,6 @@ try
 %         row = fgetl(fid);
 %     end
 catch
-    fprintf('Could not load the required file. Checkt the format (file must contain: COUNTINFO, CHANNEL, UNITS, UNDETVAL)\n');
+    fprintf('Could not load the required file. Check the format (file must contain: COUNTINFO, CHANNEL, UNITS, UNDETVAL)\n');
 end
 end
