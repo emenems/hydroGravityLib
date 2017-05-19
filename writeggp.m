@@ -89,6 +89,9 @@ if nargin > 2 && mod(nargin,2) == 0
                 header = varargin{in+1};
             case 'header_add'        
                 header_add = varargin{in+1};
+                if ~iscell(header_add)
+                    header_add = {header_add};
+                end
             case 'blocks_header'
                 blocks_header = varargin{in+1};
             case 'channels'
@@ -136,7 +139,7 @@ try
     end
     % Add head footer
     if ~isempty(header_add)
-        for i = 1:size(header_add,1)
+        for i = 1:length(header_add)
             fprintf(fid,'%s\n',header_add{i});
         end
     end
@@ -152,25 +155,36 @@ try
     if ~isempty(out_precision)
         if ~iscell(out_precision)
             out_precision = {out_precision};
-        end
-        for i = 1:size(data,2)
-            if length(out_precision) == 1 && i > 1
+            for i = 1:size(data,2)
                 out_precision(i) = out_precision(1);
             end
-            temp_format = [temp_format,out_precision{i}];
+        end
+        for i = 1:size(data,2)
+            temp_format = [temp_format,char(out_precision(i))];
         end    
     end
     temp_format = [temp_format,'\n'];
     % Convert matlab time to yyyymmdd...
     [yyyy,mm,dd,hh,mi,ss] = datevec(time);
-    % Remplace NaNs and prepare for writing
-%     data(isnan(data)) = nanvalues;
+    % Prepare precision for NaN values 
+    data_column = size(data,2);
+    for c = 1:data_column
+        temp = strsplit(out_precision{c},'.');
+        out_precision_nan{c} = [temp{1},'s'];
+    end
+    % Find all NaNs (for faster writing of flag/99999... values)
+    nanval_id = isnan(data);
+    % Find where at least one value in column is NaN
+    nanval_id_sum = ~isnan(sum(data,2));
+    % Concatonate date and data also for faster writting
     data = [yyyy,mm,dd,hh,mi,ss,data];
+    clear yyyy mm dd hh mi ss
     out_format = ['%04d%02d%02d %02d%02d%02.0f',temp_format];
     % Find blocks in time/data
     j = 1;
     block_start = 1;
-    block_value = zeros(1,size(data,2)-6);
+    block_stop = [];
+    block_value = zeros(1,data_column);
     if ~isempty(blocks)
         for i = 1:size(blocks,1)
             temp = find(time>= blocks(i));
@@ -204,16 +218,15 @@ try
         fprintf(fid,'77777777       ');
         fprintf(fid,temp_format,zeros(1,size(data,2)-6));
         for i = block_start(j):block_stop(j)
-            if ~isnan(sum(data(i,:),2))
+            if nanval_id_sum(i)
                 fprintf(fid,out_format,data(i,:));
             else
                 fprintf(fid,'%04d%02d%02d %02d%02d%02.0f',data(i,1:6));
-                for c = 7:length(data(i,:))
-                    if isnan(data(i,c))
-                        temp = strsplit(out_precision{c-6},'.');
-                        fprintf(fid,[temp{1},'s'],nanvalues);
+                for c = 1:data_column
+                    if nanval_id(i,c)
+                        fprintf(fid,out_precision_nan{c},nanvalues);
                     else
-                        fprintf(fid,out_precision{c-6},data(i,c));
+                        fprintf(fid,out_precision{c},data(i,c+6));
                     end
                 end
                 fprintf(fid,'\n');
@@ -230,5 +243,5 @@ try
 catch out
     fclose(fid);
     fprintf('Coult not write file. Error:\n%s\n',out.message);
-end         
+end
           

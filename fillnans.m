@@ -98,8 +98,16 @@ if ~isempty(r_nan)
                     % edge
                     temp_shift = 1; % one time unit/index
                     while temp_shift < fill_missing
-                        ytemp = data(r_nan(r)- temp_shift: r_nan(r)+(fill_missing-temp_shift),i); % find the affected data
-                        xtemp = time(r_nan(r)- temp_shift: r_nan(r)+(fill_missing-temp_shift),:); % get selected time interval 
+                        temp_index_r = r_nan(r)+(fill_missing-temp_shift);
+                        temp_index_l = r_nan(r)- temp_shift;
+                        if temp_index_l < 1
+                            temp_interval_l = 1;
+                        end
+                        if temp_index_r > length(data)
+                            temp_index_r = length(data);
+                        end
+                        ytemp = data(temp_index_l:temp_index_r,i); % find the affected data
+                        xtemp = time(temp_index_l:temp_index_r,:); % get selected time interval 
                         % Remove all NaNs from current interval so NaNs adjacent to the
                         % current one are not preventing the interpolation (it is only
                         % important that at least two valid values are within the interval,
