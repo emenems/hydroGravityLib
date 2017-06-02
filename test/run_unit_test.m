@@ -140,6 +140,27 @@ if round(out(1)*1e+11)/1e+11 ~= 0
     disp('detrendNaN: incorrect output value');
 end
 
+%% dayofyear 
+doy = dayofyear(2017,3,4);
+if doy ~= (31+28+4)
+    disp('dayofyear: incorrect output value (datevec input)');
+end
+doy = dayofyear(datenum(2017,3,4,12,0,0));
+if doy ~= (31+28+4+0.5)
+    disp('dayofyear: incorrect output value (datenum input)');
+end
+
+%% doy2datenum 
+time_out = doy2datenum(2017,33);
+if single(time_out)~=datenum(2017,2,2)
+    disp('doy2datenum: incorrect output value');
+end
+clear time_out
+time_out = datevec(doy2datenum(2016,33.5));
+if sum(time_out) ~= 2016 + 2 + 2 + 12
+    disp('doy2datenum: incorrect output value');
+end
+
 %% et0calc
 [ET0,time_out] = et0calc('method','PM-FAO','temperature',[21.5 12.3]',...
  						'humidity',[84 63]','radiation',[22.07 22.07]',...
