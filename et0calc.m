@@ -5,20 +5,26 @@ function [ET0,time_out] = et0calc(varargin)
 %   method       	... method switch: 
 %                   'PM-FAO': Penman-Monteith reference ET,
 %                       see http://www.fao.org/docrep/X0490E/X0490E00.htm. 
-%                       This method requires following inputs: temperature,
-%                       humidity, radiation, radiation_units, wind_speed,
-%                       wind_height, time, time_resolution, longitude,
-%                       longitude_TZ, latitude, altitude
+%                       This method requires following inputs: 
+%						'temperature'  in degC
+%                       'humidity' in %
+%						'radiation' or 'net_radiation' in 'radiation_units' 
+%						'wind_speed' in m/s 
+%						'wind_height' in m, 
+%						'time' in datenum format
+%						'time_resolution' = 'day' or 'hour', 
+%						'longitude', 'longitude_TZ' (time zone), 'latitude' in deg
+%						'altitude' in m
 %                   NOT Implemented yet 'Thornthwaite': Thornthwaite 
 %                       equation (1948) time, temperature, humidity, 
 %                       radiation, wind_speed, latitude.
-%   temperature     ... tempearture vecotor in degC
+%   temperature     ... temperature vector in degC
 %   humidity        ... humidity vector in %
 %   radiation       ... solar (global) radiation vector in 'radiation_units'
 %   radiation_units ... string with radiation units: 'W.m^-2' or 'MJ.m^-2'
 %                       or J.m^-2. Note that input in 'MJ.m^2/hour will not
 %                       be converted to daily values (must be done outside
-%                       of this fuction)!
+%                       of this function)!
 %   wind_speed      ... wind speed vector in 'm.s^-1' or 'km.h^-1' (see
 %                       'wind_units') 
 %   wind_units      ... wind speed units: 'm.s^-1' or 'km.h^-1'
@@ -35,7 +41,7 @@ function [ET0,time_out] = et0calc(varargin)
 %   pressure        ... (optional) pressure vector in 'pressure_units'
 %   pressure_units  ... (optional) pressure units: 'hPa' or 'kPa'
 %   Cn              ... (optional) reference crop type (e.g. 900). Will be 
-%                        devided by 24 In case of hourly values.
+%                        divided by 24 In case of hourly values.
 %   Cd              ... (optional) Denominator for daytime, nighttime
 %                       (e.g., [0.24 0.96])
 %   Cs              ... (optional) Soil heat flux coefficient (for hourly
@@ -84,6 +90,7 @@ ET0 = [];
 RsRso0 = 0.5;
 % Soil heat flux coefficient (for hourly resolution only)
 Cs = [0.1 0.5]; % [daytime, nightime]
+net_radiation = [];
 
 %% Read inputs
 if mod(nargin,2) == 0
@@ -100,6 +107,9 @@ if mod(nargin,2) == 0
                 humidity = varargin{in+1};
             case 'radiation'
                 radiation = varargin{in+1};
+            case 'net_radiation'
+                radiation = varargin{in+1};
+                net_radiation = 1;
             case 'radiation_units'
                 radiation_units = varargin{in+1};
             case 'wind_speed'
@@ -143,7 +153,8 @@ end
 %% Penman-monteith
 if strcmp(method,'PM-FAO')
     % Check for required input time series
-    if exist('temperature','var') && exist('humidity','var') && exist('radiation','var') &&...
+    if exist('temperature','var') && exist('humidity','var') && ...
+	   (exist('radiation','var') || exist('net_radiation','var')) &&...
        exist('radiation_units','var') && exist('wind_speed','var') && exist('wind_height','var') &&...
        exist('time_in','var') && exist('time_resolution','var') && exist('LON','var') &&...
        exist('LON_TZ','var') && exist('Z','var') && exist('LAT','var')
@@ -339,38 +350,43 @@ if strcmp(method,'PM-FAO')
         end
 
         %% Step12: clear sky radiation
-        Rso = (0.75 + Z*2e-5)*Ra;
+        if isempty(net_radiation)
+            Rso = (0.75 + Z*2e-5)*Ra;
 
-        %% Step13: Net solar or net shortwave radiation
-        Rns = (1 - 0.23)*Rs; % 0.23 = albedo
+            %% Step13: Net solar or net shortwave radiation
+            Rns = (1 - 0.23)*Rs; % 0.23 = albedo
 
-        %% Step14: Net outgoing long wave solar radiation
-        % First compute the reation Rs/Rso and set to max. possible value
-        Rs_Rso = Rs./Rso; 
-        Rs_Rso(Rs_Rso>1) = 1;
-        Rs_Rso(Rso==0) = RsRso0; % 0.33=> dense cloud cover, 1=clear sky
-        if strcmp(time_resolution,'day')
-            Rnl = 4.903e-9.*t0.*(0.5.*((Tmax + 273.16).^4 + (Tmin + 273.16).^4)).*(0.34 - 0.14*sqrt(ea)).*(1.35.*Rs_Rso - 0.35);
-        else
-            Rnl = 4.903e-9.*t0.*((Tmean + 273.16).^4).*(0.34 - 0.14*sqrt(ea)).*(1.35.*Rs_Rso - 0.35);
-        end
-        Rnl(Rnl<0) = 0;
+            %% Step14: Net outgoing long wave solar radiation
+            % First compute the ration Rs/Rso and set to max. possible value
+            Rs_Rso = Rs./Rso; 
+            Rs_Rso(Rs_Rso>1) = 1;
+            Rs_Rso(Rso==0) = RsRso0; % 0.33=> dense cloud cover, 1=clear sky
+            if strcmp(time_resolution,'day')
+                Rnl = 4.903e-9.*t0.*(0.5.*((Tmax + 273.16).^4 + (Tmin + 273.16).^4)).*(0.34 - 0.14*sqrt(ea)).*(1.35.*Rs_Rso - 0.35);
+            else
+                Rnl = 4.903e-9.*t0.*((Tmean + 273.16).^4).*(0.34 - 0.14*sqrt(ea)).*(1.35.*Rs_Rso - 0.35);
+            end
+            Rnl(Rnl<0) = 0;
         
-        %% Step15: Net radiation
-        Rn = Rns - Rnl;
-        if ~strcmp(time_resolution,'day')
-            G = Ra.*0;
-            G(Ra==0) = Cs(2)*Rn(Ra==0); % nighttime
-            G(Ra~=0) = Cs(1)*Rn(Ra~=0); % daytime
-            % Aerodynamic resistivity
-            CdU2 = U2.*0;
-            CdU2(Ra==0) = Cd(2)*U2(Ra==0); % nighttime
-            CdU2(Ra~=0) = Cd(1)*U2(Ra~=0); % daytime
-        else
-            G = 0;
-            CdU2 = Cd(1)*U2;
+        %% Step15: Net radiation + soil heat flux
+			Rn = Rns - Rnl;
+		else
+			Rn = Rs;
         end
-
+		% Soil heat flux
+		if ~strcmp(time_resolution,'day')
+			G = Ra.*0;
+			G(Ra==0) = Cs(2)*Rn(Ra==0); % nighttime
+			G(Ra~=0) = Cs(1)*Rn(Ra~=0); % daytime
+			% Aerodynamic resistivity
+			CdU2 = U2.*0;
+			CdU2(Ra==0) = Cd(2)*U2(Ra==0); % nighttime
+			CdU2(Ra~=0) = Cd(1)*U2(Ra~=0); % daytime
+		else
+			G = 0;
+			CdU2 = Cd(1)*U2;
+		end
+		
         %% FinalStep: Overall ET0 equation
         ET0 = (0.408.*delta.*(Rn - G) + omega*Cn.*t0.*U2.*(es - ea)./(Tmean + 273))./...
               (delta + omega.*(1 + CdU2));

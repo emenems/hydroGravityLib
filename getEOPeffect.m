@@ -46,7 +46,7 @@ R = 6371008;
 % url to EOP data
 url_link_pol = 'http://hpiers.obspm.fr/iers/eop/eopc04/eopc04_IAU2000.62-now';  
 % number of neader characters (not rows!)
-url_header = 673;
+url_header = 674;
 % number of characters in a row (now data columns!)        
 url_rows = 156;            
 %% Start reading                                                 
