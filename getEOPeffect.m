@@ -45,13 +45,18 @@ w = 72921151.467064/10^12;
 R = 6371008;
 % url to EOP data
 url_link_pol = 'http://hpiers.obspm.fr/iers/eop/eopc04/eopc04_IAU2000.62-now';  
-% number of neader characters (not rows!)
-url_header = 674;
 % number of characters in a row (now data columns!)        
 url_rows = 156;            
-%% Start reading                                                 
-str = urlread(url_link_pol);
-str = str(url_header:end);
+%% Start reading          
+str = urlread(url_link_pol);          
+% Try to estimate the number of header lines (may change in time)
+for i = 673:680 % estimated range  
+    if  strcmp(str(i),'1')
+        break;
+    end
+end
+% Remove header
+str = str(i:end);
 % reshape to row oriented matrix
 str_mat = reshape(str,url_rows,length(str)/url_rows);
 %% Transform time

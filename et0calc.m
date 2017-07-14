@@ -6,21 +6,18 @@ function [ET0,time_out] = et0calc(varargin)
 %                   'PM-FAO': Penman-Monteith reference ET,
 %                       see http://www.fao.org/docrep/X0490E/X0490E00.htm. 
 %                       This method requires following inputs: 
-%						'temperature'  in degC
-%                       'humidity' in %
-%						'radiation' or 'net_radiation' in 'radiation_units' 
-%						'wind_speed' in m/s 
-%						'wind_height' in m, 
-%						'time' in datenum format
-%						'time_resolution' = 'day' or 'hour', 
-%						'longitude', 'longitude_TZ' (time zone), 'latitude' in deg
-%						'altitude' in m
+%						'temperature','humidity','radiation' or 'net_radiation', 
+%						'radiation_units','wind_speed','wind_height','time'
+%						'time_resolution','longitude', 'longitude_TZ','latitude'
+%						'altitude'
 %                   NOT Implemented yet 'Thornthwaite': Thornthwaite 
 %                       equation (1948) time, temperature, humidity, 
 %                       radiation, wind_speed, latitude.
 %   temperature     ... temperature vector in degC
 %   humidity        ... humidity vector in %
-%   radiation       ... solar (global) radiation vector in 'radiation_units'
+%   radiation       ... solar global radiation vector in 'radiation_units'
+%   net_radiation   ... net radiation vector in 'radiation_units' (use either
+%						'radiation' or 'net_radiation')
 %   radiation_units ... string with radiation units: 'W.m^-2' or 'MJ.m^-2'
 %                       or J.m^-2. Note that input in 'MJ.m^2/hour will not
 %                       be converted to daily values (must be done outside
@@ -43,9 +40,10 @@ function [ET0,time_out] = et0calc(varargin)
 %   Cn              ... (optional) reference crop type (e.g. 900). Will be 
 %                        divided by 24 In case of hourly values.
 %   Cd              ... (optional) Denominator for daytime, nighttime
-%                       (e.g., [0.24 0.96])
+%                       (e.g., [0.24 0.96], https://naldc.nal.usda.gov/download/2196/PDF)
 %   Cs              ... (optional) Soil heat flux coefficient (for hourly
-%                       resolution only, e.g., [0.1 0.5]) 
+%                       resolution only, e.g., [0.1 0.5], 
+%                       see http://www.fao.org/docrep/x0490e/x0490e07.htm) 
 %   RsRso           ... (optional) Relative shortwave radiation constant
 %                       used when Rs/Rso=0. Approx. alternative (FAO): 
 %                       Rs/Rso = 0.4 to 0.6 during nighttime periods in 
@@ -61,23 +59,20 @@ function [ET0,time_out] = et0calc(varargin)
 %   time_out        ... output time vector in matlab/datenum format. Time
 %                       points to previous 24 | or 1 hour. Just like
 %                       precipitation 
+% Example:
+% [ET0,time_out] = et0calc('method','PM-FAO','temperature',temperature,...
+%  						'humidity',humidity,...
+% 						'radiation',radiation,...
+%  						'radiation_units','MJ.m^-2',...
+%  						'wind_units','m.s^-1','wind_height',1.6,...
+%  						'time',time0,'wind_speed',wind_speed,...
+% 						'time_resolution','hour',...
+% 						'longitude',20.81125,'latitude',-32.38163,...
+% 						'longitude_TZ',30,'altitude',1762,...
+% 						'Cn',888,'Cd',[0.24 0.96],'Cs',[0.1 0.5],'RsRso',0.5);
 %
-%
-% Tested using FAO examle (see unit test):
-% http://www.fao.org/docrep/x0490e/x0490e08.htm#eto calculated with different time steps
-% Test3/Example: Compare to campbell scientific logger output for 
-% Sutherland hourly estimations: 2 year long time series, set ('Cn',888,'Cd',[0.24 0.96],
-% 'Cs',[0.1 0.5],'longitude_TZ',15,'wind_height',1.6,'radiation_units',
-% 'MJ.m^-2','longitude',20.81125,'latitude',-32.38163, 'altitude',1762)
-% Resulting differences:   
-%   STD = 0.037 mm
-%   Max error  = 0.47 mm 
-%   min error = -0.34 mm 
-%   mean = 0.002 mm
-%   Cumulative sum error for 2015-2017 = -30 mm (overestimation) ==> ~0.8%
-% 
-% Requirements/dependency ('matlab_octave_library'):
-%   data2*.m + writetsf.m
+% Tested using FAO examples (see unit test):
+% http://www.fao.org/docrep/x0490e/x0490e08.htm#eto
 % 
 %                                                    M.Mikolaj
 %                                                    mikolaj@gfz-potsdam.de
@@ -207,7 +202,9 @@ if strcmp(method,'PM-FAO')
         
         %% Step2: Mean radiation
         % Remove unrealistic values
-        radiation(radiation<0) = 0;
+        if isempty(net_radiation)
+            radiation(radiation<0) = 0;
+        end
         % Compute mean
         switch time_resolution
             case 'day'
@@ -359,8 +356,10 @@ if strcmp(method,'PM-FAO')
             %% Step14: Net outgoing long wave solar radiation
             % First compute the ration Rs/Rso and set to max. possible value
             Rs_Rso = Rs./Rso; 
-            Rs_Rso(Rs_Rso>1) = 1;
-            Rs_Rso(Rso==0) = RsRso0; % 0.33=> dense cloud cover, 1=clear sky
+            % Set max-min range% 0.3=> dense cloud cover, 1=clear sky
+            Rs_Rso(Rs_Rso>1) = 1; 
+            Rs_Rso(Rs_Rso<0.3) = 0.3;
+            Rs_Rso(Rso==0) = RsRso0; % Default value for NaNs
             if strcmp(time_resolution,'day')
                 Rnl = 4.903e-9.*t0.*(0.5.*((Tmax + 273.16).^4 + (Tmin + 273.16).^4)).*(0.34 - 0.14*sqrt(ea)).*(1.35.*Rs_Rso - 0.35);
             else

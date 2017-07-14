@@ -229,7 +229,7 @@ if single(time_out(1)) ~= single(datenum(1999,10,1,3,00,0)) ||...
         length(time_out) ~= 2
     disp('et0calc hourly (net): incorrect output time/size');
 end
-if round(ET0(1)*10)/10 ~= 0 || round(ET0(2)*100)/100 ~= 0.63
+if round(ET0(1)*100)/100 ~= 0 || round(ET0(2)*100)/100 ~= 0.63
     disp('et0calc hourly (net): incorrect output value');
 end
 clear time_out ET0

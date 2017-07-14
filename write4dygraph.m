@@ -15,7 +15,7 @@ if size(time,2) == 1
 end
 dataout = [time,data];
 if isempty(header)
-    for i = 1:size(data)
+    for i = 1:size(data,2)
         header{i} = sprintf('column%1d',i);
     end
 end

@@ -12,7 +12,7 @@ These **functions do not require any other/external library**, although some too
 * `data2hourly`: resample input time series to hourly values using either mean or sum
 * `data2monthly`: resample input time series to monthly values using either mean or sum
 * `dayofyear`: compute day of year (returns fraction of day if hour, minute or seconds on input)
-* `doy2datenum`: convert year and day of year input to to [datenum](mathworks.com/help/matlab/ref/datenum.html) format
+* `doy2datenum`: convert year and day of year input to [datenum](mathworks.com/help/matlab/ref/datenum.html) format
 * `demean`: subtract mean value from input data (vector or matrix)
 * `denan`: simple removal of NaNs (by reducing length of the input vector). See `fillnans` for an alternative approach without reducing input vectors
 * `detrendNaN`: subtract required polynomial fit from input vector containing NaNs  
