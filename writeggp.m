@@ -150,7 +150,7 @@ try
         fprintf(fid,' %s(%s)',channels{i},units{i});  
     end
     fprintf(fid,'\nC*******************************************************\n');
-    % Check if ouput precision has been specified
+    % Check if output precision has been specified
     temp_format = '';
     if ~isempty(out_precision)
         if ~iscell(out_precision)
@@ -176,7 +176,7 @@ try
     nanval_id = isnan(data);
     % Find where at least one value in column is NaN
     nanval_id_sum = ~isnan(sum(data,2));
-    % Concatonate date and data also for faster writting
+    % Concatenate date and data also for faster writing
     data = [yyyy,mm,dd,hh,mi,ss,data];
     clear yyyy mm dd hh mi ss
     out_format = ['%04d%02d%02d %02d%02d%02.0f',temp_format];
@@ -203,11 +203,11 @@ try
     for j = 1:length(block_start)
         % Add header of the block
         if ~isempty(blocks_header)
-            if size(blocks_header,1) == 1
+            if size(blocks_header,1) == 1 % same header for each block
                 fprintf(fid,'%10s%15.4f%10.4f%10.3f%10d\n',...
                     blocks_header{1},blocks_header{2},blocks_header{3},...
                     blocks_header{4},blocks_header{5});
-            elseif size(blocks_header,1) == 1
+            elseif size(blocks_header,1) > 1 % new header for each block
                 fprintf(fid,'%10s%15.4f%10.4f%10.3f%10d\n',...
                     blocks_header{j,1},blocks_header{j,2},...
                     blocks_header{j,3},blocks_header{j,4},...
@@ -242,6 +242,6 @@ try
     fclose(fid);
 catch out
     fclose(fid);
-    fprintf('Coult not write file. Error:\n%s\n',out.message);
+    fprintf('Could not write file. Error:\n%s\n',out.message);
 end
           

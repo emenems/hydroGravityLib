@@ -20,7 +20,7 @@ function [time,data,channels] = getEOSTloading(url_link,varargin)
 % Example2:
 %   url_link = 'http://loading.u-strasbg.fr/GGP/ocean/ECCO1/BE931612.oce';
 %   time_out = datenum(2010,1,1):1/24:datenum(2011,1,1);
-%   [time,data,chan] = getEOSTloading(url_link,time_out,save_as);
+%   [time,data,chan] = getEOSTloading(url_link,time_out);
 %
 % Example3:
 %   url_link = 'http://loading.u-strasbg.fr/GGP/atmos/0.10/AP02163h.mog';

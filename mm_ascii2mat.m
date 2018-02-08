@@ -35,6 +35,10 @@ while isnan(str2double(row(1)))
     else
         % Split input/current row
         temp = strsplit(row,' ');
+        % in case the line ends with ' ' (although it should not)
+        if isempty(temp{end})
+            temp = temp(1:end-1);
+        end
         % Get/read the input parameters. Use case sensitive switch
         switch lower(row(1:3))
             case 'nco'
@@ -82,7 +86,12 @@ end
 if nargin >= 2
     if ischar(varargin{1})
         dem.source = fileID;
-        save(varargin{1},'dem','v7');
+        v = version;
+        if strcmp(v(end),')') % matlab
+            save(varargin{1},'dem','-v7');
+        else
+            save(varargin{1},'dem','-mat7-binary');
+        end
     end
 end
 

@@ -191,12 +191,12 @@ if strcmp(method,'PM-FAO')
         % Find Min and Max temperature values
         switch time_resolution
             case 'day'
-                [time_out,Tmin] = data2daily(time_in,temperature,3,1);
+                [time_out,Tmin] = data2daily(time_in,temperature,3,0);
                 time_out = datenum(time_out) + 0.5;
                 [~,Tmax] = data2daily(time_in,temperature,4,1);
                 Tmean = (Tmin + Tmax)./2;
             case 'hour'
-                [time_out,Tmean] = data2hourly(time_in,temperature,1,1);  
+                [time_out,Tmean] = data2hourly(time_in,temperature,1,0);  
                 time_out = datenum(time_out) + 0.5/24;
         end
         
@@ -208,9 +208,9 @@ if strcmp(method,'PM-FAO')
         % Compute mean
         switch time_resolution
             case 'day'
-                [~,Rs] = data2daily(time_in,radiation,1,1);
+                [~,Rs] = data2daily(time_in,radiation,1,0);
             case 'hour'
-                [~,Rs] = data2hourly(time_in,radiation,1,1);
+                [~,Rs] = data2hourly(time_in,radiation,1,0);
         end
         % Convert units
         switch radiation_units
@@ -238,9 +238,9 @@ if strcmp(method,'PM-FAO')
         % Interpolate wind speed to required time resolution
         switch time_resolution
             case 'day'
-                [~,Uh] = data2daily(time_in,wind_speed,1,1);
+                [~,Uh] = data2daily(time_in,wind_speed,1,0);
             case 'hour'
-                [~,Uh] = data2hourly(time_in,wind_speed,1,1);
+                [~,Uh] = data2hourly(time_in,wind_speed,1,0);
         end
         % Must be measured at 2 m, if not covert
         if wind_height ~= 2
@@ -264,9 +264,9 @@ if strcmp(method,'PM-FAO')
             % Interpolate pressure to required time resolution
             switch time_resolution
                 case 'day'
-                    [~,P] = data2daily(time_in,pressure,1,1);
+                    [~,P] = data2daily(time_in,pressure,1,0);
                 case 'hour'
-                    [~,P] = data2hourly(time_in,pressure,1,1);
+                    [~,P] = data2hourly(time_in,pressure,1,0);
             end
             % Convert Units if required (default: hPa);
             if strcmp(pressure_units,'hPa')
@@ -297,11 +297,11 @@ if strcmp(method,'PM-FAO')
             humidity(humidity>100) = 100;
             switch time_resolution
                 case 'day'
-                    [~,RHmin] = data2daily(time_in,humidity,3,1);
-                    [~,RHmax] = data2daily(time_in,humidity,4,1);
+                    [~,RHmin] = data2daily(time_in,humidity,3,0);
+                    [~,RHmax] = data2daily(time_in,humidity,4,0);
                     ea = (emin.*(RHmax./100) + emax.*(RHmin./100))./2;
                 otherwise
-                    [~,RHdata] = data2hourly(time_in,humidity,1,1);
+                    [~,RHdata] = data2hourly(time_in,humidity,1,0);
                     ea = es.*RHdata./100;
             end
         else
