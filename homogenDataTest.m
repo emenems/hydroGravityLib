@@ -34,11 +34,18 @@ if nargin == 4
     max_time(2) = max(time_full);
     data_full(time_full<max(min_time) | time_full>min(max_time),:) = [];
     data_miss(time_miss<max(min_time) | time_miss>min(max_time),:) = [];
+    time_use = time_full(time_full>=max(min_time) & time_full<=min(max_time));
+    if length(time_use) ~= length(data_full)
+        time_use = time_miss(time_miss>=max(min_time) & time_miss<=min(max_time));
+    end
+else 
+    time_use = transpose(1:1:length(data_miss));
 end
 % Remove NaNs present in either of the time series
 r_nan = find(isnan(data_full+data_miss));
 data_full(r_nan) = [];
 data_miss(r_nan) = [];
+time_use(r_nan) = [];
 clear r_nan
 
 %% Compute standard deviations, means, covariance and correlation
@@ -114,9 +121,13 @@ xlabel('full vector');
 ylabel('vector with missing data');
 axis equal
 subplot(1,2,2);
-plot(1:1:length(y2_res),y2_res,'k.');
+plot(time_use,y2_res,'k.');
 title('Double mass: fit residuals vs record number (should be random)');
 ylabel('residuals');
-xlabel('record number');
+if nargin == 4
+    xlabel('matlab date-time');
+else
+    xlabel('record number');
+end
 
 end % function

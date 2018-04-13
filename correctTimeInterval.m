@@ -119,6 +119,12 @@ if ~isempty(in)
                     xtemp = time(time<x1(i) | time>x2(i));
                     data(r,channel(i)) = interp1(xtemp,ytemp,time(r),'spline');
                 end
+            case 5 % Set range to given values 
+                r = find(time>=x1(i) & time<=x2(i)); 
+                if ~isempty(r)
+                    rep_val = linspace(y1(i),y2(i),length(r));
+                    data(r,channel(i)) = rep_val;
+                end
         end
     end
 end

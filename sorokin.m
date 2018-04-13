@@ -32,7 +32,7 @@ function dg = sorokin(point_of_computation,Xi,Yi,Hi,density,height,grid)
 
 
 %% COMPUTATION
-R = 6371000;
+R = 6371008;
 d = sqrt((point_of_computation(1)-Xi).^2 + (point_of_computation(2)-Yi).^2);
 Hi = Hi - ((sqrt(d.^2 + R^2) - R).*R)./(sqrt(d.^2 + R^2));
 clear d R;

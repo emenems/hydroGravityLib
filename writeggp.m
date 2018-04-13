@@ -216,7 +216,7 @@ try
         end
         % Start block
         fprintf(fid,'77777777       ');
-        fprintf(fid,temp_format,zeros(1,size(data,2)-6));
+        fprintf(fid,temp_format,block_value(j,:));
         for i = block_start(j):block_stop(j)
             if nanval_id_sum(i)
                 fprintf(fid,out_format,data(i,:));

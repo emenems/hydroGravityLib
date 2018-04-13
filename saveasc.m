@@ -36,7 +36,7 @@ else
 end
 if round(cellsize*1e+7)/1e+7 == round(check_size*1e+7)/1e+7
     fid = fopen(file_out,'w');
-    fprintf(fid,['NCOLS ',out_prec,'\nNROWS ',out_prec,'\n'],ncols,nrows);
+    fprintf(fid,['NCOLS ','%.0f','\nNROWS ','%.0f','\n'],ncols,nrows);
     fprintf(fid,['XLLCORNER ',out_prec,'\nYLLCORNER ',out_prec,'\n'],xll,yll);
     fprintf(fid,['CELLSIZE ',out_prec,'\n'],cellsize);
     fprintf(fid,['NODATA_VALUE ',out_prec,'\n'],out_no_data);
