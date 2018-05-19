@@ -39,9 +39,9 @@ clear r;
 %% Standard method
 % Switch between matlab and octave
 v = version;
-if strcmp(v(end),')') % matlab
+if strcmp(v(end),')') || strcmp(v,'4.4.0')% matlab
     [r_stand,ptest] = corrcoef(signal1,signal2);
-else % octave
+else % octave < 4.4.0
     r_stand(1,2) = corr(signal1,signal2);
     temp = cor_test(signal1,signal2);
     ptest(1,2) = temp.pval;

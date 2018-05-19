@@ -85,10 +85,19 @@ if ~isempty(in)
                 if channel(i) <= size(data,2)
                     % find points recorded after the step occur.
                     r = find(time >= x2(i));
+                    % check if given or computed difference should be
+                    % applied 
+                    if ~isnan(y1(i)) && isnan(y2(i))
+                        applyDiff = interp1(time,data(:,channel(i)),x2(i)) - ...
+                                    interp1(time,data(:,channel(i)),x1(i)) - ...
+                                    y1(i);
+                    else 
+                        applyDiff = (y2(i)-y1(i));
+                    end
                     % continue only if some points have been found
                     if ~isempty(r)
                         % remove the step by SUBTRACTING the given difference.
-                        data(r,channel(i)) = data(r,channel(i)) - (y2(i)-y1(i)); 
+                        data(r,channel(i)) = data(r,channel(i)) - applyDiff; 
                     end                         
                 end
             case 2 % Interval removal. Values between given dates => set to NaN  

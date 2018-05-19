@@ -479,6 +479,17 @@ end
 if isnan(sum(data_out(20:30))) || (data_out(end-9)-data_out(end-11))~=10
     disp('correctTimeInterval incorrect output value');
 end
+data(end-2:end) = 12;
+corMatrix = [1,1,datevec(time(end-3)),datevec(time(end-2)),0,NaN];
+data_out = correctTimeInterval(time,data,corMatrix);
+if sum(data_out(end-4:end)) ~= 5
+    disp('correctTimeInterval incorrect step correction');
+end
+corMatrix = [1,1,datevec(time(end-3)),datevec(time(end-2)),1,NaN];
+data_out = correctTimeInterval(time,data,corMatrix);
+if sum(data_out(end-4:end)) ~= 5+3
+    disp('correctTimeInterval incorrect step correction');
+end
 clear data_out corMatrix
 
 %% pointDistance
